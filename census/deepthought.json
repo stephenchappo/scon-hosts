@@ -1,0 +1,331 @@
+{
+ "host": "deepthought",
+ "taken": "2026-10-27T21:39:16Z",
+ "os": "Ubuntu 22.04.5 LTS",
+ "kernel": "5.15.0-198-generic",
+ "cpu": "13th Gen Intel(R) Core(TM) i9-13900HX",
+ "cores": 32,
+ "ram_gb": 31.0,
+ "gpu": [
+  "NVIDIA GeForce RTX 4070 Laptop GPU, 8188 MiB"
+ ],
+ "disks": [
+  "/                   936G  640G  72%",
+  "/boot               2.0G  449M  25%",
+  "/boot/efi           1.1G  6.1M   1%",
+  "/mnt/marvin/photos   16T   14T  87%",
+  "/marvin              16T   14T  87%"
+ ],
+ "addresses": [
+  "enp153s0 192.168.42.150/24",
+  "br-0020247d8410 172.20.0.1/16",
+  "br-538682e85f25 172.18.0.1/16",
+  "br-5b8ea3cf46c9 172.21.0.1/16",
+  "br-64158b98c9c4 172.28.0.1/16",
+  "br-08eab74b12ed 192.168.0.1/20",
+  "br-3611c82e0b58 172.31.0.1/16",
+  "br-5303396b0f75 172.23.0.1/16",
+  "docker0 172.17.0.1/16",
+  "br-ba772136bde1 172.19.0.1/16",
+  "br-e9e83b9ea42c 192.168.16.1/20",
+  "tailscale0 100.78.161.123/32"
+ ],
+ "tailscale": {
+  "ip": "100.78.161.123",
+  "name": "deepthought.batfish-pride.ts.net."
+ },
+ "listening": [
+  "0.0.0.0:111",
+  "0.0.0.0:1704",
+  "0.0.0.0:1705",
+  "0.0.0.0:1706",
+  "0.0.0.0:1780",
+  "0.0.0.0:22",
+  "0.0.0.0:2375",
+  "0.0.0.0:35613",
+  "0.0.0.0:4533",
+  "0.0.0.0:5678",
+  "0.0.0.0:61208",
+  "0.0.0.0:6600",
+  "0.0.0.0:7474",
+  "0.0.0.0:7687",
+  "0.0.0.0:8000",
+  "0.0.0.0:8080",
+  "0.0.0.0:8443",
+  "0.0.0.0:8490",
+  "0.0.0.0:8491",
+  "0.0.0.0:9078",
+  "0.0.0.0:9080",
+  "100.78.161.123:8484",
+  "100.78.161.123:8797",
+  "100.78.161.123%tailscale0:443",
+  "100.78.161.123%tailscale0:56516",
+  "[::]:111",
+  "*:11434",
+  "127.0.0.1:29865",
+  "127.0.0.1:8188",
+  "127.0.0.1:8484",
+  "127.0.0.1:8485",
+  "127.0.0.1:8797",
+  "127.0.0.1:8798",
+  "127.0.0.53%lo:53",
+  "[::]:1704",
+  "[::]:1705",
+  "[::]:1706",
+  "[::]:1780",
+  "192.168.42.150:8484",
+  "[::]:22",
+  "*:22000",
+  "[::]:2375",
+  "[::]:37043",
+  "*:40097",
+  "[::]:4533",
+  "[::]:5678",
+  "[::]:6600",
+  "[::]:7474",
+  "[::]:7687",
+  "[::]:8000",
+  "[::]:8080",
+  "*:8384",
+  "[::]:8443",
+  "[::]:8490",
+  "[::]:8491",
+  "[::]:9078",
+  "[::]:9080",
+  "*:9100",
+  "[fd7a:115c:a1e0::b62d:a17c]%tailscale0:443",
+  "[fd7a:115c:a1e0::b62d:a17c]%tailscale0:48158"
+ ],
+ "docker": [
+  {
+   "name": "snapserver",
+   "image": "firefrei/snapcast:latest",
+   "status": "Up 14 hours",
+   "ports": "0.0.0.0:1704->1704/tcp, [::]:1704->1704/tcp, 3689/tcp, 5000-5005/tcp, 0.0.0.0:1780->1780/tcp, 0.0.0.0:1704->1704/udp, [::]:1780->1780/tcp, [::]:1704->1704/udp, 5353/tcp, 6000-6005/udp, 0.0.0.0:1705->443/tcp, [::]:1705->443/tcp, 0.0.0.0:1706->1705/tcp, [::]:1706->1705/tcp"
+  },
+  {
+   "name": "syncthing",
+   "image": "syncthing/syncthing:1",
+   "status": "Up 4 days (healthy)",
+   "ports": ""
+  },
+  {
+   "name": "neo4j-neo4j-1",
+   "image": "neo4j:5-community",
+   "status": "Up 4 days",
+   "ports": "0.0.0.0:7474->7474/tcp, [::]:7474->7474/tcp, 7473/tcp, 0.0.0.0:7687->7687/tcp, [::]:7687->7687/tcp"
+  },
+  {
+   "name": "homelab-notify-homelab-notify-1",
+   "image": "python:3.10-slim",
+   "status": "Up 4 days (healthy)",
+   "ports": "0.0.0.0:8490->8490/tcp, [::]:8490->8490/tcp"
+  },
+  {
+   "name": "homelab-notify-ntfy-1",
+   "image": "binwiederhier/ntfy:v2.28.0",
+   "status": "Up 4 days",
+   "ports": "0.0.0.0:8491->80/tcp, [::]:8491->80/tcp"
+  },
+  {
+   "name": "n8n",
+   "image": "n8n-ytdlp:latest",
+   "status": "Up 4 days",
+   "ports": "0.0.0.0:5678->5678/tcp, [::]:5678->5678/tcp"
+  },
+  {
+   "name": "tts",
+   "image": "ghcr.io/matatonic/openedai-speech",
+   "status": "Up 4 days",
+   "ports": "0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp"
+  },
+  {
+   "name": "multi-scrobbler",
+   "image": "foxxmd/multi-scrobbler:latest",
+   "status": "Up 4 days",
+   "ports": "0.0.0.0:9078->9078/tcp, [::]:9078->9078/tcp"
+  },
+  {
+   "name": "mympd",
+   "image": "ghcr.io/jcorporation/mympd/mympd:latest",
+   "status": "Up 4 days",
+   "ports": "0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp, 0.0.0.0:8443->8443/tcp, [::]:8443->8443/tcp"
+  },
+  {
+   "name": "librespot",
+   "image": "giof71/librespot:latest",
+   "status": "Up 4 days",
+   "ports": ""
+  },
+  {
+   "name": "mpd",
+   "image": "snapcast-mpd",
+   "status": "Up 4 days",
+   "ports": "0.0.0.0:6600->6600/tcp, [::]:6600->6600/tcp"
+  },
+  {
+   "name": "navidrome",
+   "image": "deluan/navidrome:latest",
+   "status": "Up 4 days",
+   "ports": "0.0.0.0:4533->4533/tcp, [::]:4533->4533/tcp"
+  },
+  {
+   "name": "socket-proxy",
+   "image": "tecnativa/docker-socket-proxy:latest",
+   "status": "Up 4 days",
+   "ports": "0.0.0.0:2375->2375/tcp, [::]:2375->2375/tcp"
+  },
+  {
+   "name": "promtail",
+   "image": "grafana/promtail:latest",
+   "status": "Up 4 days",
+   "ports": "0.0.0.0:9080->9080/tcp, [::]:9080->9080/tcp"
+  },
+  {
+   "name": "node-exporter",
+   "image": "prom/node-exporter:latest",
+   "status": "Up 4 days",
+   "ports": ""
+  },
+  {
+   "name": "glances",
+   "image": "nicolargo/glances:latest-full",
+   "status": "Up 4 days"
+  }
+ ],
+ "compose_projects": [
+  "glances /srv/docker/deepthought/glances/docker-compose.yml",
+  "homelab-notify /srv/docker/deepthought/homelab-notify/docker-compose.yml",
+  "monitoring-agents /srv/docker/deepthought/monitoring-agents/docker-compose.yml",
+  "multi-scrobbler /srv/docker/deepthought/multi-scrobbler/docker-compose.yml",
+  "n8n /srv/docker/deepthought/n8n/docker-compose.yml",
+  "navidrome /srv/docker/deepthought/navidrome/docker-compose.yml",
+  "neo4j /home/scon/work/kink-graph-pr/99-Meta/graph/neo4j/docker-compose.yml",
+  "snapcast /srv/docker/deepthought/snapcast/docker-compose.yml",
+  "socket-proxy /srv/docker/deepthought/socket-proxy/docker-compose.yml",
+  "syncthing /srv/docker/deepthought/syncthing/docker-compose.yml",
+  "tts /srv/docker/deepthought/tts/docker-compose.yml"
+ ],
+ "systemd_user_units": [
+  "vault-graph-notify.path active waiting",
+  "at-spi-dbus-bus.service active running",
+  "claude-remote-control.service active running",
+  "codex-remote-control.service active running",
+  "codex-watchdog.service inactive dead",
+  "comfyui.service active running",
+  "dbus.service active running",
+  "dirmngr.service inactive dead",
+  "fetlife-refresh.service inactive dead",
+  "gpg-agent.service inactive dead",
+  "gpu-mode.service active running",
+  "gpud.service active running",
+  "kb-freshness.service inactive dead",
+  "lecturn-library.service inactive dead",
+  "liked-tagger-propose.service inactive dead",
+  "liked-tagger.service active running",
+  "ollama.service inactive dead",
+  "pk-debconf-helper.service inactive dead",
+  "snapd.session-agent.service inactive dead",
+  "systemd-remount-fs.service inactive dead",
+  "vault-graph-notify.service inactive dead",
+  "vault-graph.service active running",
+  "vault-sync-on-demand@obsidian-ai.service inactive dead",
+  "vault-sync-on-demand@obsidian-kink-rag.service inactive dead",
+  "vault-sync-on-demand@obsidian-vault.service inactive dead",
+  "codex-watchdog.timer active waiting",
+  "fetlife-refresh.timer active waiting",
+  "kb-freshness.timer active waiting",
+  "liked-tagger-propose.timer active waiting",
+  "vault-sync-on-demand@obsidian-ai.timer active waiting",
+  "vault-sync-on-demand@obsidian-kink-rag.timer active waiting",
+  "vault-sync-on-demand@obsidian-vault.timer active waiting"
+ ],
+ "systemd_user_timers": [
+  "Tue 2026-10-27 14:40:13 PDT 56s left      Tue 2026-10-27 14:39:13 PDT 3s ago      vault-sync-on-demand@obsidian-ai.timer       vault-sync-on-demand@obsidian-ai.service",
+  "Tue 2026-10-27 14:40:13 PDT 56s left      Tue 2026-10-27 14:39:13 PDT 3s ago      vault-sync-on-demand@obsidian-kink-rag.timer vault-sync-on-demand@obsidian-kink-rag.service",
+  "Tue 2026-10-27 14:40:13 PDT 56s left      Tue 2026-10-27 14:39:13 PDT 3s ago      vault-sync-on-demand@obsidian-vault.timer    vault-sync-on-demand@obsidian-vault.service",
+  "Tue 2026-10-27 14:42:43 PDT 3min 26s left Tue 2026-10-27 14:32:43 PDT 6min ago    codex-watchdog.timer                         codex-watchdog.service",
+  "Tue 2026-10-27 14:42:43 PDT 3min 26s left Tue 2026-10-27 14:32:43 PDT 6min ago    fetlife-refresh.timer                        fetlife-refresh.service",
+  "Tue 2026-10-27 14:53:08 PDT 13min left    Tue 2026-10-27 14:38:08 PDT 1min 8s ago liked-tagger-propose.timer                   liked-tagger-propose.service",
+  "Sun 2026-11-01 04:09:17 PST 4 days left   Sun 2026-10-25 04:02:53 PDT 2 days ago  kb-freshness.timer                           kb-freshness.service"
+ ],
+ "systemd_system_custom": [
+  "dbus-fi.w1.wpa_supplicant1.service",
+  "dbus-org.freedesktop.ModemManager1.service",
+  "dbus-org.freedesktop.resolve1.service",
+  "dbus-org.freedesktop.thermald.service",
+  "dbus-org.freedesktop.timesync1.service",
+  "iscsi.service",
+  "multipath-tools.service",
+  "nvidia-persistence-mode.service",
+  "ollama.service",
+  "snap.lxd.activate.service",
+  "snap.lxd.daemon.service",
+  "snap.lxd.user-daemon.service",
+  "sony-a7iv-ingest@.service",
+  "sshd.service",
+  "sudo.service",
+  "syslog.service",
+  "vmtoolsd.service"
+ ],
+ "crontab": [
+  "15 0 * * * /srv/docker/scripts/backup-deepthought.sh >> $HOME/logs/backup-deepthought.cron.log 2>&1",
+  "30 7 * * * $HOME/bin/homelab-health-cron",
+  "*/5 * * * * /home/scon/bin/homelab-health-textfile >/dev/null 2>&1",
+  "30 3 * * * $HOME/bin/librarian-backup-cron",
+  "45 0 * * * $HOME/host-config/capture-host-config.sh"
+ ],
+ "claude_code": {
+  "version": "",
+  "path": null
+ },
+ "claude_mcp_servers": [
+  "canva",
+  "playwright"
+ ],
+ "claude_hooks": {
+  "SessionStart": [
+   "python3 -c \"\nimport subprocess, json\nrepos = ['/srv/docker', '/home/scon/work/_project-meta/claude-config', '/home/scon/work/obsidian-vault', '/home/scon/work/knowledge-graph']\nresults = []\nfor repo in repos:\n    r = subprocess.run(['git', '-C', repo, 'pull'], capture_output=True, text=True)\n    output = (r.stdout.strip() or r.stderr.strip())\n    first = output.splitlines()[0] if output else 'no output'\n    results.append(f'{repo}: {first}')\ncontext = '\\n'.join(results)\nprint(json.dumps({'hookSpecificOutput': {'hookEventName': 'SessionStart', 'additionalContext': 'GIT PULL RESULTS:\\n\\n' + context}}))\n\"",
+   "$HOME/bin/homelab-health-hook"
+  ],
+  "PreToolUse": [
+   "python3 /home/scon/work/_project-meta/claude-config/dotfiles/claude/hooks/block-raw-call-reminders.py"
+  ]
+ },
+ "claude_skills": [
+  "check-services",
+  "document",
+  "mixcloud-download",
+  "monitoring-stack-deployer",
+  "synced",
+  "wrap-up"
+ ],
+ "claude_memory_dirs": [
+  "-",
+  "-home-scon",
+  "-home-scon-hive",
+  "-home-scon-projects",
+  "-home-scon-projects-companion",
+  "-home-scon-work",
+  "-srv",
+  "-tmp-claude-1000--home-scon-work-7e4bf28b-c72e-5d16-8187-ec10567d37ca-scratchpad",
+  "-tmp-claude-1000--home-scon-work-905437e2-048c-5ef3-affc-3e718256bcb0-scratchpad"
+ ],
+ "work_repos": [
+  "fetlife-refresh-wt",
+  "fetlife-review-queue",
+  "kink-eval",
+  "kink-graph-full",
+  "kink-graph-pr",
+  "kink-rag-hybrid",
+  "meeting-pipeline",
+  "native-frontend-framework",
+  "obsidian-ai",
+  "obsidian-kink-rag",
+  "obsidian-magic-tarot",
+  "obsidian-magic-tarot.local-2026-10-14",
+  "obsidian-personal-enc",
+  "obsidian-vault",
+  "okr-deep"
+ ]
+}
