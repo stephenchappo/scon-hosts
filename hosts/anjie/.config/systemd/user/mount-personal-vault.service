@@ -1,0 +1,12 @@
+[Unit]
+Description=Mount gocryptfs personal Obsidian vault
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/bin/mount-personal-vault.sh
+RemainAfterExit=yes
+ExecStop=/bin/fusermount -u %h/work/obsidian-personal
+
+[Install]
+WantedBy=default.target

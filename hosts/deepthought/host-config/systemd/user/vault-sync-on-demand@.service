@@ -1,0 +1,7 @@
+[Unit]
+Description=Obsidian vault %i: sync to GitHub when Sync.md's checkbox is ticked
+
+[Service]
+Type=oneshot
+ExecStart=%h/bin/vault-sync-on-demand.py %h/work/%i
+Environment=GIT_SSH_COMMAND=ssh -o BatchMode=yes

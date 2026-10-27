@@ -1,0 +1,17 @@
+[Unit]
+Description=Claude Code Remote Control (exposes Anjie's sessions to the Claude app)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/work
+ExecStart=/home/scon/.nvm/versions/node/v22.22.3/bin/claude remote-control
+Restart=always
+RestartSec=10
+StandardOutput=null
+StandardError=journal
+Environment=PATH=/home/scon/.nvm/versions/node/v22.22.3/bin:/home/scon/.local/bin:/home/scon/.npm-global/bin:/home/scon/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:/home/scon/.cargo/bin
+
+[Install]
+WantedBy=default.target

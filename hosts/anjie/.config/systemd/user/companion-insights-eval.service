@@ -1,0 +1,13 @@
+[Unit]
+Description=Companion brief insights eval — overnight multi-model run
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/work/companion
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=OLLAMA_ENDPOINT=http://deepthought:11434
+ExecStart=/bin/sh -c 'uv run python scripts/run-brief-insights-overnight.py >> %h/work/companion/logs/insights-eval.log 2>&1'
+StandardOutput=journal
+StandardError=journal

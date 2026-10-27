@@ -1,0 +1,13 @@
+[Unit]
+Description=Native frontend audition board and app page (tailnet only, 100.96.176.20:8796)
+After=network-online.target
+
+[Service]
+WorkingDirectory=%h/work/native-frontend-framework
+ExecStart=/usr/bin/python3 tools/audition-board.py --serve
+# The tailnet address may not exist yet at boot; keep retrying until it does.
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

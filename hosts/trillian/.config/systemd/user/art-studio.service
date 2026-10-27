@@ -1,0 +1,14 @@
+[Unit]
+Description=Art Studio — batch reweighting UI (art-tools)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/work/obsidian-ai/art-tools
+ExecStart=/usr/bin/python3 %h/work/obsidian-ai/art-tools/studio.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

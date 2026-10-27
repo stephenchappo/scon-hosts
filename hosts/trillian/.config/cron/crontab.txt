@@ -1,0 +1,18 @@
+# trillian2 crontab — SNAPSHOT exported 2026-09-14.
+# Not the live source. After 'crontab -e', re-run:
+#   crontab -l > ~/.config/cron/crontab.txt
+# Restore with: crontab ~/.config/cron/crontab.txt
+#
+0 3 * * * /usr/bin/python3 /srv/docker/scripts/generate-vault-docs.py >> /home/scon/logs/docker-vault-sync.log 2>&1
+# Vikunja daily backup — 3:30am, 30-day retention
+30 3 * * * docker exec vikunja-db pg_dump -U vikunja vikunja | gzip > /marvin/Backups/vikunja/$(date +\%Y\%m\%d).sql.gz && find /marvin/Backups/vikunja -name "*.sql.gz" -mtime +30 -delete
+0 * * * * git -C /home/scon/work/obsidian-vault pull --ff-only >> /home/scon/logs/vault-pull.log 2>&1
+# Immich off-host backup — 4am daily, after 2am DB dump inside container
+0 4 * * * /srv/docker/trillian/immich/backup-to-marvin.sh >> /srv/docker/trillian/immich/backup.log 2>&1
+*/15 * * * * bash /home/scon/work/obsidian-vault/50-Places/trip-planner/scripts/commit-app-writes.sh >> /home/scon/logs/places-app-writes.log 2>&1
+30 4 1 * * cd /home/scon/work/obsidian-vault/50-Places/trip-planner && /usr/bin/python3 scripts/pulse_places.py --notify >> /home/scon/logs/places-pulse.log 2>&1
+0 6 * * 5 cd /home/scon/work/obsidian-vault/50-Places/trip-planner && /usr/bin/python3 scripts/pulse_places.py --weather >> /home/scon/logs/places-pulse.log 2>&1
+45 6 * * 5 cd /home/scon/work/obsidian-vault/50-Places/trip-planner && /usr/bin/python3 scripts/weekend_dossier.py --notify >> /home/scon/logs/places-pulse.log 2>&1
+0 7 * * 3 [ $(( 10#$(date +\%V) \% 2 )) -eq 1 ] && cd /home/scon/work/obsidian-vault/50-Places/trip-planner && /usr/bin/python3 scripts/gap_hunt.py --rotate --notify >> /home/scon/logs/places-pulse.log 2>&1
+*/10 * * * * /usr/bin/python3 /home/scon/work/obsidian-ai/art-tools/immich_sync.py >> /home/scon/.config/art-tools/sync.log 2>&1
+20 4 * * * /srv/docker/trillian/ritual-spread/backup.sh >> /srv/docker/trillian/ritual-spread/backup.log 2>&1

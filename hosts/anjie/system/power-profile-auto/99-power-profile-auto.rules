@@ -1,0 +1,2 @@
+# Re-evaluate the power profile whenever the AC adapter is plugged or unplugged.
+SUBSYSTEM=="power_supply", KERNEL=="AC", ATTR{online}=="0|1", RUN+="/usr/bin/systemctl --no-block start power-profile-auto.service"

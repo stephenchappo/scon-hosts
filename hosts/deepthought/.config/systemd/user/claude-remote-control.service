@@ -1,0 +1,20 @@
+[Unit]
+Description=Claude Code Remote Control (exposes Deepthought's sessions to the Claude app)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/work
+ExecStart=%h/.local/bin/claude remote-control
+# Restart forever: if auth lapses it exits, then resumes on its own after `claude auth login`.
+Restart=always
+RestartSec=10
+# The status panel redraws every second; keep it out of the journal.
+StandardOutput=null
+StandardError=journal
+Environment=CLAUDE_REMOTE_CONTROL_SESSION_NAME_PREFIX=deepthought
+Environment=PATH=%h/.local/bin:%h/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+[Install]
+WantedBy=default.target

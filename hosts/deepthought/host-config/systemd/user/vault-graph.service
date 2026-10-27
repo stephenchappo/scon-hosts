@@ -1,0 +1,14 @@
+[Unit]
+Description=Vault Graph server: the kink-rag graph for the Godot viewer (tailnet + localhost only)
+Documentation=file:///home/scon/work/kink-graph-pr/99-Meta/graph/viewer/README.md
+
+[Service]
+# Code from the worktree of obsidian-kink-rag branch claude/lightrag-hybrid until it merges;
+# then point this at ~/work/obsidian-kink-rag.
+WorkingDirectory=/home/scon/work/kink-graph-pr
+ExecStart=/home/scon/lightrag-kink/.venv/bin/python 99-Meta/graph/viewer/serve.py --data /home/scon/lightrag-kink/viewer --host 127.0.0.1 --host 100.78.161.123 --port 8797 --app /home/scon/lightrag-kink/viewer/app
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

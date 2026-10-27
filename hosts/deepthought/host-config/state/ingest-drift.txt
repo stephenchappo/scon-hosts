@@ -1,0 +1,17 @@
+# Drift: deployed vs ~/work/sony-camera-ingest
+#
+# This repo does NOT carry these files. If a line below says DIFF or
+# ABSENT-IN-REPO, the deployed host has drifted from its own installer
+# and a reimage would restore the WRONG version. Fix it in that repo.
+
+SAME            /etc/systemd/system/mnt-marvin-photos.mount
+SAME            /etc/systemd/system/sony-a7iv-ingest@.service
+SAME            /etc/udev/rules.d/90-sony-a7iv-ingest.rules
+SAME            /opt/photo-ingest/caption-arw.py
+SAME            /opt/photo-ingest/immich-stack-raw-jpg.py
+SAME            /opt/photo-ingest/ingest-dedupe.py
+DIFF            /opt/photo-ingest/post-ingest.py
+SAME            /opt/photo-ingest/promote-shoot.sh
+DIFF            /opt/photo-ingest/sony-a7iv-ingest.sh
+
+# DRIFTED — see above

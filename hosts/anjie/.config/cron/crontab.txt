@@ -1,0 +1,8 @@
+# Anjie crontab — SNAPSHOT exported 2026-09-14.
+# Not the live source. After 'crontab -e', re-run:
+#   crontab -l > ~/.config/cron/crontab.txt
+# Restore with: crontab ~/.config/cron/crontab.txt
+#
+*/5 * * * * /home/scon/bin/sync-personal-vault.sh >> /home/scon/.local/log/vault-sync.log 2>&1
+*/5 * * * * /home/scon/bin/sync-ai-vault.sh >> /home/scon/.local/log/vault-sync.log 2>&1
+*/5 * * * * /home/scon/bin/sync-kink-rag-vault.sh >> /home/scon/.local/log/vault-sync.log 2>&1

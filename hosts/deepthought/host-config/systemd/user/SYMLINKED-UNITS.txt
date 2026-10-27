@@ -1,0 +1,6 @@
+gpu-mode.service -> /home/scon/work/gpu-mode/systemd/gpu-mode.service
+kb-freshness.service -> /home/scon/work/obsidian-kink-rag/99-Meta/pipeline/freshness/systemd/kb-freshness.service
+liked-tagger-propose.service -> /home/scon/work/liked-tagger/liked-tagger-propose.service
+liked-tagger.service -> /home/scon/work/liked-tagger/liked-tagger.service
+kb-freshness.timer -> /home/scon/work/obsidian-kink-rag/99-Meta/pipeline/freshness/systemd/kb-freshness.timer
+liked-tagger-propose.timer -> /home/scon/work/liked-tagger/liked-tagger-propose.timer

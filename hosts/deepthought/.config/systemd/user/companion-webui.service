@@ -1,0 +1,13 @@
+[Unit]
+Description=Companion minimal local query web UI
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/work/companion
+ExecStart=/usr/bin/env bash %h/work/companion/scripts/run-webui.sh
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

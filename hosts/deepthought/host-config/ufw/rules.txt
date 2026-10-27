@@ -1,0 +1,16 @@
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 8003/tcp                   ALLOW IN    Anywhere                   # Companion web UI
+[ 2] 22/tcp                     ALLOW IN    192.168.42.0/24            # SSH from LAN
+[ 3] 11434                      ALLOW IN    192.168.42.0/24           
+[ 4] 8484/tcp                   ALLOW IN    192.168.42.189             # gpud API — Trillian console + Prometheus
+[ 5] 11434/tcp                  ALLOW IN    172.16.0.0/12              # Ollama from Docker bridge networks
+[ 6] 8485/tcp                   ALLOW IN    192.168.42.189             # gpu-moded API — Trillian Companion System tab
+[ 7] 9100/tcp                   ALLOW IN    192.168.42.189             # node-exporter — Prometheus on Trillian
+[ 8] 8384/tcp                   ALLOW IN    192.168.42.0/24            # Syncthing web UI (LAN)
+[ 9] 22000                      ALLOW IN    192.168.42.0/24            # Syncthing sync (LAN, tcp+udp)
+[10] 21027/udp                  ALLOW IN    192.168.42.0/24            # Syncthing local discovery
+[11] 8003/tcp (v6)              ALLOW IN    Anywhere (v6)              # Companion web UI
+

@@ -1,0 +1,19 @@
+[Unit]
+Description=Scene Director — BDSM scene arc composer (ritual-spread deck)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/work/scene-director
+ExecStart=/usr/bin/python3 %h/work/scene-director/server.py
+Restart=on-failure
+RestartSec=5
+# Defaults (override with a drop-in or environment file):
+#   SCENE_PORT=8687
+#   SCENE_DECK_PATH=%h/work/ritual-spread/tasks.json
+#   SCENE_MODEL=qwen3:8b
+#   OLLAMA_ENDPOINT=http://deepthought:11434
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,16 @@
+[Unit]
+Description=Companion vault web UI (LAN + Tailscale)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/scon/work/companion
+EnvironmentFile=-/home/scon/work/companion/.immich.env
+Environment=PATH=/home/scon/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/usr/bin/env bash -lc 'cd /home/scon/work/companion && make vaults-serve'
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

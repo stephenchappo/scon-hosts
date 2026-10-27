@@ -1,0 +1,53 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -m json.tool)",
+      "Bash(sudo reboot)",
+      "Bash(sudo grep \"sdb1\\\\|20260513\" /var/log/sony-a7iv-ingest.log)",
+      "Read(//srv/docker/deepthought/**)",
+      "Bash(find /home/scon/.claude -name \"*.md\" | head -30 && ls /home/scon/.claude/)",
+      "Read(//home/scon/.claude/**)"
+    ],
+    "defaultMode": "auto"
+  },
+  "model": "opus[1m]",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"\nimport subprocess, json\nrepos = ['/srv/docker', '/home/scon/work/_project-meta/claude-config', '/home/scon/work/obsidian-vault', '/home/scon/work/knowledge-graph']\nresults = []\nfor repo in repos:\n    r = subprocess.run(['git', '-C', repo, 'pull'], capture_output=True, text=True)\n    output = (r.stdout.strip() or r.stderr.strip())\n    first = output.splitlines()[0] if output else 'no output'\n    results.append(f'{repo}: {first}')\ncontext = '\\n'.join(results)\nprint(json.dumps({'hookSpecificOutput': {'hookEventName': 'SessionStart', 'additionalContext': 'GIT PULL RESULTS:\\n\\n' + context}}))\n\"",
+            "statusMessage": "Pulling latest from all repos..."
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/bin/homelab-health-hook",
+            "statusMessage": "Checking NAS health..."
+          }
+        ]
+      }
+    ]
+  },
+  "worktree": {
+    "bgIsolation": "none"
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh"
+  },
+  "enabledPlugins": {
+    "playwright@claude-plugins-official": false
+  },
+  "effortLevel": "high",
+  "tui": "fullscreen",
+  "skipDangerousModePermissionPrompt": true,
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true,
+  "skipAutoPermissionPrompt": true,
+  "voiceEnabled": true
+}

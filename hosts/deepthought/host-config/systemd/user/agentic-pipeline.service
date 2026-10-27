@@ -1,0 +1,16 @@
+[Unit]
+Description=Agentic Pipeline (v0) — Plan/Execute/Critique FastAPI server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/scon/work/agentic pipeline
+ExecStart=/home/scon/bin/start-agentic-pipeline.sh
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/tmp/agentic-pipeline.log
+StandardError=append:/tmp/agentic-pipeline.log
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=default.target

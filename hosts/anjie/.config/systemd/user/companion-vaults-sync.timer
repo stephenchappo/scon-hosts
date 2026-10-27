@@ -1,0 +1,11 @@
+[Unit]
+Description=Companion vault calendar sync — every 30 minutes
+Requires=companion-vaults-sync.service
+
+[Timer]
+OnCalendar=*:0/30
+Persistent=true
+RandomizedDelaySec=60
+
+[Install]
+WantedBy=timers.target

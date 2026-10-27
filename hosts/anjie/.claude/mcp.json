@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest", "--headless"],
+      "transport": "stdio"
+    },
+    "inspector-jake": {
+      "command": "npx",
+      "args": ["-y", "inspector-jake-mcp"],
+      "transport": "stdio"
+    },
+    "deep-research": {
+      "command": "/home/scon/work/Claude-Deep-Research/venv/bin/python",
+      "args": ["/home/scon/work/Claude-Deep-Research/deep_research.py"],
+      "transport": "stdio"
+    }
+  }
+}

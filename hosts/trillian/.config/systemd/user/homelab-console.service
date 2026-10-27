@@ -1,0 +1,13 @@
+[Unit]
+Description=Homelab Console — branded job dashboard
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+WorkingDirectory=%h/work/obsidian-ai/console
+ExecStart=%h/work/obsidian-ai/console/.venv/bin/python server.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

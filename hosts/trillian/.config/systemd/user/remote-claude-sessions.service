@@ -1,0 +1,18 @@
+[Unit]
+Description=Remote Control Claude Code tmux sessions (Remote 1-5)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=%h/bin/remote-claude-sessions.sh
+# The tmux server must outlive this unit. KillMode=process signals only the
+# main process on stop, leaving the daemonized tmux server (and the Claude
+# sessions under it) running. KillMode=none would also work but is deprecated
+# in systemd 255+ and slated for removal.
+KillMode=process
+TimeoutStopSec=5
+
+[Install]
+WantedBy=default.target

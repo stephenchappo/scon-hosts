@@ -1,0 +1,16 @@
+# Host state — regenerated each run; see the commit date
+
+kernel:        5.15.0-198-generic
+os:            Ubuntu 22.04.5 LTS
+nvidia driver: 580.178.04 (kernel module 580.178.04)
+dkms:          nvidia/580.178.04, 5.15.0-190-generic, x86_64: installed;nvidia/580.178.04, 5.15.0-198-generic, x86_64: installed;
+ollama:        ollama version is 0.32.14
+docker:        Docker version 29.7.2, build a7dcaa6
+
+# linger MUST be enabled or every user unit dies at logout
+linger(scon):  Linger=yes
+
+# mounts — absent means NOT MOUNTED, which is the F3 condition
+192.168.42.186:/volume1/Marvin /marvin nfs4
+192.168.42.186:/volume1/Marvin /mnt/marvin/photos nfs4
+(not mounted)  /mnt/media_drive

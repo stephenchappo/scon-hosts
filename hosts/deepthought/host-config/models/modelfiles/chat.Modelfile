@@ -1,0 +1,18 @@
+# chat:latest — the default local model, referenced by service configs
+# (LibreChat modelSpecs, agentic-pipeline, n8n) so the underlying model can be
+# swapped here without editing every config.
+#
+# Repointed 2026-08-21: qwen3:8b -> qwen3.5:4b, on benchmark evidence
+# (gpu-mode/docs/bench-results-2026-08-20.md). Rollback is one command:
+#   ollama create chat -f <(echo 'FROM qwen3:8b')
+#
+# num_ctx 32768, not the 4096 default. Measured: qwen3.5:4b holds 32768 entirely
+# on the GPU at 56.1 tok/s with 2764 MiB still free — room for nomic-embed-text
+# alongside. The model it replaces spilled to CPU at 16384 and halved to 19 tok/s,
+# so this is an 8x context increase AND a throughput increase at the same time.
+#
+# Sampling is inherited from qwen3.5:4b's own Modelfile (temperature 1, top_k 20,
+# top_p 0.95, presence_penalty 1.5) rather than copied from the old alias
+# (temperature 0.6) — these are the model author's recommended values.
+FROM qwen3.5:4b
+PARAMETER num_ctx 32768

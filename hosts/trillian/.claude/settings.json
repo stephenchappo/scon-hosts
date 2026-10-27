@@ -1,0 +1,128 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:2284/)",
+      "Bash(curl -s http://192.168.42.150:11434/api/tags)",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(m['name'], m.get\\('details',{}\\).get\\('parameter_size',''\\)\\) for m in data.get\\('models',[]\\)]\")",
+      "Bash(grep -r -E \"^[0-9]{1,5}\\\\s+[A-Z]\" /home/scon/work/obsidian-vault --include=\"*.md\")",
+      "Bash(ls ~/Downloads/ | grep -i allegis)",
+      "Read(//home/scon/Downloads/**)",
+      "Bash(cat ~/.ssh/config | grep -A3 -i anjie; grep -i anjie ~/.ssh/known_hosts 2>/dev/null | head -5)",
+      "Read(//home/scon/.ssh/**)",
+      "Read(//etc/**)",
+      "Bash(arp -n)",
+      "Bash(ssh-copy-id -i ~/.ssh/id_ed25519.pub scon@192.168.42.130)",
+      "Bash(top -bn1)",
+      "Bash(ssh scon@192.168.42.150 'cd /srv/docker/deepthought/* && docker compose up -d*)",
+      "Bash(ssh scon@192.168.42.150 docker compose --project-directory /srv/docker/deepthought/* up -d*)",
+      "Bash(cd /srv/docker/trillian/* && docker compose up -d*)",
+      "Bash(docker compose --project-directory /srv/docker/trillian/* up -d*)",
+      "Bash(ssh scon@192.168.42.150 'cd /srv/docker/deepthought/* && docker compose restart*)",
+      "Bash(ssh scon@192.168.42.150 docker compose --project-directory /srv/docker/deepthought/* restart*)",
+      "Bash(cd /srv/docker/trillian/* && docker compose restart*)",
+      "Bash(docker compose --project-directory /srv/docker/trillian/* restart*)",
+      "Bash(ssh scon@192.168.42.150 'cd /srv/docker/deepthought/* && docker compose down*)",
+      "Bash(ssh scon@192.168.42.150 docker compose --project-directory /srv/docker/deepthought/* down*)",
+      "Bash(cd /srv/docker/trillian/* && docker compose down*)",
+      "Bash(docker compose --project-directory /srv/docker/trillian/* down*)",
+      "Bash(ssh scon@192.168.42.150 'cd /srv/docker/deepthought/* && docker compose stop*)",
+      "Bash(ssh scon@192.168.42.150 docker compose --project-directory /srv/docker/deepthought/* stop*)",
+      "Bash(cd /srv/docker/trillian/* && docker compose stop*)",
+      "Bash(docker compose --project-directory /srv/docker/trillian/* stop*)",
+      "Bash(ssh scon@192.168.42.150 'cd /srv/docker/deepthought/* && docker compose start*)",
+      "Bash(ssh scon@192.168.42.150 docker compose --project-directory /srv/docker/deepthought/* start*)",
+      "Bash(cd /srv/docker/trillian/* && docker compose start*)",
+      "Bash(docker compose --project-directory /srv/docker/trillian/* start*)",
+      "Bash(ssh scon@192.168.42.150 'cd /srv/docker/deepthought/* && docker compose ps*)",
+      "Bash(ssh scon@192.168.42.150 docker compose --project-directory /srv/docker/deepthought/* ps*)",
+      "Bash(cd /srv/docker/trillian/* && docker compose ps*)",
+      "Bash(docker compose --project-directory /srv/docker/trillian/* ps*)",
+      "Bash(ssh scon@192.168.42.150 'cd /srv/docker/deepthought/* && docker compose logs*)",
+      "Bash(ssh scon@192.168.42.150 docker compose --project-directory /srv/docker/deepthought/* logs*)",
+      "Bash(cd /srv/docker/trillian/* && docker compose logs*)",
+      "Bash(docker compose --project-directory /srv/docker/trillian/* logs*)",
+      "Bash(ssh scon@192.168.42.150 'cd /srv/docker/deepthought/* && docker compose pull*)",
+      "Bash(ssh scon@192.168.42.150 docker compose --project-directory /srv/docker/deepthought/* pull*)",
+      "Bash(cd /srv/docker/trillian/* && docker compose pull*)",
+      "Bash(docker compose --project-directory /srv/docker/trillian/* pull*)",
+      "Bash(ssh scon@192.168.42.150 'cd /srv/docker/deepthought/* && docker compose config*)",
+      "Bash(ssh scon@192.168.42.150 docker compose --project-directory /srv/docker/deepthought/* config*)",
+      "Bash(cd /srv/docker/trillian/* && docker compose config*)",
+      "Bash(docker compose --project-directory /srv/docker/trillian/* config*)"
+    ],
+    "additionalDirectories": [
+      "/home/scon/.ssh"
+    ]
+  },
+  "model": "opus[1m]",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /home/scon/.claude/hooks/versioned-deliverable.py",
+            "if": "Bash(cp *)",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python3 /home/scon/.claude/hooks/versioned-deliverable.py",
+            "if": "Bash(mv *)",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python3 /home/scon/.claude/hooks/versioned-deliverable.py",
+            "if": "Bash(ffmpeg *)",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python3 /home/scon/.claude/hooks/versioned-deliverable.py",
+            "if": "Bash(rsync *)",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /home/scon/work/_project-meta/claude-config/dotfiles/claude/hooks/block-raw-call-reminders.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /home/scon/work/_project-meta/claude-config/dotfiles/claude/hooks/session-start-git-pull.py",
+            "statusMessage": "Pulling latest from all repos..."
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  },
+  "tui": "fullscreen",
+  "skipDangerousModePermissionPrompt": true,
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true,
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "Docker Compose lifecycle commands (up -d, up -d --force-recreate, restart, down, stop, start, ps, logs, pull, config) for any service defined under /srv/docker/deepthought/<service>/ (run on Deepthought via ssh scon@192.168.42.150) or /srv/docker/trillian/<service>/ (locally on Trillian) are allowed: Stephen authorized recreating his homelab containers on 2026-10-10. This covers compose commands only, not docker rm/rmi/volume rm/system prune or edits to compose files or data directories.",
+      "Pushing a Ritual Spread feature branch to main of github.com/stephenchappo/projects, from ~/work or a git worktree of it, as a fast-forward (`git push origin HEAD:main` or `git push origin origin/<branch>:main`), is allowed even though it triggers the ritual-spread autodeploy to production, when Stephen has asked in the current conversation for that branch to be merged: he authorized Claude to merge and deploy Ritual Spread on 2026-10-10. Fast-forward pushes only: no --force or --force-with-lease to main, no deleting or rewriting main, and no pushing other projects' work to main this way."
+    ]
+  }
+}

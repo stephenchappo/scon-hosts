@@ -1,0 +1,13 @@
+# deepthought crontab — SNAPSHOT exported 2026-09-14.
+# Not the live source. After 'crontab -e', re-run:
+#   crontab -l > ~/.config/cron/crontab.txt
+# Restore with: crontab ~/.config/cron/crontab.txt
+#
+0 3 * * * cd /srv/docker/deepthought/agentic-pipeline && docker compose run --rm indexer >> /tmp/rag-index.log 2>&1
+*/30 * * * * $HOME/bin/sync-debt-tracker.sh >> $HOME/logs/sync-debt-tracker.log 2>&1
+15 0 * * * /srv/docker/scripts/backup-deepthought.sh >> $HOME/logs/backup-deepthought.cron.log 2>&1
+30 7 * * * $HOME/bin/homelab-health-cron
+*/5 * * * * /home/scon/bin/homelab-health-textfile >/dev/null 2>&1
+30 3 * * * $HOME/bin/librarian-backup-cron
+*/30 * * * * $HOME/bin/vault-sync >> $HOME/logs/vault-sync.log 2>&1
+45 0 * * * $HOME/host-config/capture-host-config.sh

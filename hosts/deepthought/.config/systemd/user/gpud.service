@@ -1,0 +1,17 @@
+[Unit]
+Description=gpud — capacity-based GPU batch scheduler (Eddie substrate)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/work/obsidian-ai
+Environment=GPUD_MARVIN_MOUNT_ROOT=/mnt/marvin
+# Uncomment after downloading the Pony V6 XL checkpoint (TRILLIAN-DEPLOY.md §B7):
+Environment=GPUD_SDXL_MODEL_FILE=%h/models/sdxl/ponyDiffusionV6XL.safetensors
+ExecStart=%h/work/obsidian-ai/gpud/.venv/bin/python -m gpud.main
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

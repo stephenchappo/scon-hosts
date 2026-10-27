@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# blank — launch an isolated Claude Code session with no context from this machine.
+#
+# Isolation:
+#   - cwd is /srv/blank-slate/workspace: outside $HOME, so no CLAUDE.md is
+#     inherited from ~/CLAUDE.md, ~/.claude/CLAUDE.md, or any parent.
+#   - CLAUDE_CONFIG_DIR points at the container's own config: no memory,
+#     no session history, no hooks, no skills, no MCP servers, no settings.
+#   - --safe-mode        disables all customizations (CLAUDE.md, skills,
+#                        plugins, hooks, MCP, agents, output styles).
+#   - --restricted       removes Bash and the other code-running tools plus
+#                        WebFetch, and confines the file tools to the cwd.
+#   - --strict-mcp-config  ignores every MCP config; no connectors.
+#   - --disable-slash-commands  no skills at all.
+#   - settings.json      denies reads/writes anywhere under /home/scon.
+#
+# Transcripts persist in /srv/blank-slate/config and nowhere else. This
+# directory is not a git repo and is not synced anywhere.
+set -euo pipefail
+
+ROOT=/srv/blank-slate
+export CLAUDE_CONFIG_DIR="$ROOT/config"
+
+# Seed the OAuth token once so the container does not need a separate login.
+# Delete $CLAUDE_CONFIG_DIR/.credentials.json to force a fresh login instead.
+if [[ ! -f "$CLAUDE_CONFIG_DIR/.credentials.json" && -f "$HOME/.claude/.credentials.json" ]]; then
+  install -m 600 "$HOME/.claude/.credentials.json" "$CLAUDE_CONFIG_DIR/.credentials.json"
+fi
+
+cd "$ROOT/workspace"
+exec claude \
+  --safe-mode \
+  --restricted \
+  --strict-mcp-config \
+  --disable-slash-commands \
+  --settings "$ROOT/settings.json" \
+  --name blank \
+  "$@"

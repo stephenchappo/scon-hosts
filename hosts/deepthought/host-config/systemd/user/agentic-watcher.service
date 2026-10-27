@@ -1,0 +1,16 @@
+[Unit]
+Description=Agentic Pipeline drop-folder watcher
+After=network.target agentic-pipeline.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/scon/work/agentic pipeline
+ExecStart=/home/scon/bin/start-agentic-watcher.sh
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/tmp/agentic-watcher.log
+StandardError=append:/tmp/agentic-watcher.log
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=default.target

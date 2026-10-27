@@ -1,0 +1,23 @@
+[Unit]
+Description=Lecturn library batch (resumable; pauses with exit 75 when the Claude API is unusable)
+After=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=/home/scon/work/lecturn
+Environment=LECTURN__PATHS__DB_PATH=/home/scon/lecturn-pilot/lecturn.sqlite3
+Environment=LECTURN__PATHS__WORK_DIR=/home/scon/lecturn-pilot/work
+Environment=LECTURN__PATHS__OUTPUT_DIR=/home/scon/lecturn-pilot/output
+Environment=LECTURN__PATHS__FRAMES_DIR=/home/scon/lecturn-pilot/frames
+Environment=LECTURN__PATHS__LOGS_DIR=/home/scon/lecturn-pilot/logs
+Environment=LECTURN__PATHS__VAULT_ROOT=/home/scon/work/obsidian-kink-rag
+Environment=LECTURN_CLAUDE_BATCH_DB=/home/scon/lecturn-pilot/claude-batch.sqlite3
+ExecStart=/home/scon/work/lecturn/bin/lecturn batch /marvin/Videos/Porn/Educational "/marvin/Videos/Porn/Shibari Study" "/marvin/Videos/Courses/Rope Tutorial Videos" "/marvin/Videos/Caning Sensual to Sadistic Kink.com.mp4" "/marvin/Videos/Porn/Creativity with Wax by Ember Solaris.mp4" "/marvin/Videos/Porn/Part 1 Captain_Thorson with Advanced Knifeplay Let’s Get Dangerous!.mp4" "/marvin/Videos/Porn/Part 2 Captain_Thorson with Advanced Knifeplay Let’s Get Dangerous!.mp4" /marvin/Videos/Porn/chair_tie.mp4 --log /home/scon/lecturn-pilot/library.jsonl --after-group /home/scon/lecturn-pilot/commit-vault.sh
+# A pause (API out of credit) or a crash retries in 30 min; a finished batch exits 0 and stays down.
+Restart=on-failure
+RestartSec=30min
+Nice=10
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,20 @@
+[Unit]
+Description=ComfyUI — headless backend for the gpud Wan i2v video pipeline
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/ComfyUI
+# Bind to loopback only — same no-inbound trust model as gpud. gpud reaches it at
+# GPUD_COMFY_URL (default http://127.0.0.1:8188).
+ExecStart=%h/ComfyUI/.venv/bin/python main.py --listen 127.0.0.1 --port 8188
+Restart=on-failure
+RestartSec=5
+# Idle ComfyUI holds NO VRAM until a workflow runs, so it coexists with gpud on
+# the same GPU. It must have read access to the NAS art dir (source stills) and
+# its own output dir must be readable by gpud (the wan_chunk worker copies the
+# finished MP4 out — or set GPUD_COMFY_OUTPUT_DIR so gpud resolves it directly).
+
+[Install]
+WantedBy=default.target

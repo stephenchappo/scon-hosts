@@ -1,0 +1,22 @@
+[Unit]
+Description=FetLife refresh: ingest hand-saved FetLife pages, LLM change review, re-save queue
+After=network-online.target ollama.service
+
+[Service]
+Type=oneshot
+# Paths are filled in by install.sh.
+WorkingDirectory=/home/scon/work/obsidian-kink-rag
+Environment=KINK_VAULT=/home/scon/work/obsidian-kink-rag
+Environment=FETLIFE_INBOX=/marvin/Backups/discord-exports/fetlife-inbox
+# 1 = re-download due pages with the owner's cookies (see README).
+Environment=FETLIFE_AUTO_FETCH=1
+# Checkout of the fetlife-review-queue branch: swipe cards out, decisions in.
+Environment=FETLIFE_SYNC_DIR=/home/scon/work/fetlife-review-queue
+# Liked photos go here (Stash scans it); the list URL is read from ~/.config/fetlife-refresh/liked-url.
+Environment="FETLIFE_LIKED_DIR=/marvin/Videos/Porn/FetLife Liked"
+# Which picture links machine-group threads follow: none | external | all (see README).
+Environment=FETLIFE_FOLLOW_PICTURES=all
+# Page fetches per day, shared with the liked-photos list reads (Stephen, 2026-10-25).
+Environment=FETLIFE_FETCH_PER_DAY=40
+ExecStart=/home/scon/.local/share/kb-freshness/venv/bin/python /home/scon/work/fetlife-refresh-wt/99-Meta/pipeline/fetlife_refresh/fetlife_refresh.py run
+Nice=10

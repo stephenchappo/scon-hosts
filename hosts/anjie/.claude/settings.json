@@ -1,0 +1,143 @@
+{
+  "permissions": {
+    "defaultMode": "auto",
+    "skipDangerousModePermissionPrompt": true,
+    "allow": [
+      "Edit(~/work/obsidian-personal/**)",
+      "Bash(git -C /home/scon/work/obsidian-personal-enc *)",
+      "mcp__claude-code-remote__send_message",
+      "Bash(ritual-spread/deploy/deploy.sh:*)",
+      "Bash(ritual-spread/deploy/reset_account.sh:*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/git-pull-session-start.sh\"",
+            "timeout": 90
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /home/scon/work/_project-meta/claude-config/dotfiles/claude/hooks/block-raw-call-reminders.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "warp@claude-code-warp": true,
+    "cartographer@cartographer-marketplace": true,
+    "superpowers@superpowers-marketplace": true,
+    "typesafe@typesafe-ai": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-code-warp": {
+      "source": {
+        "source": "github",
+        "repo": "warpdotdev/claude-code-warp"
+      }
+    },
+    "cartographer-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "kingbootoshi/cartographer"
+      }
+    },
+    "superpowers-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "obra/superpowers-marketplace"
+      }
+    },
+    "typesafe-ai": {
+      "source": {
+        "source": "github",
+        "repo": "typesafe-ai/skills"
+      }
+    }
+  },
+  "tui": "fullscreen",
+  "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
+  "theme": "auto",
+  "preferredNotifChannel": "ghostty",
+  "remoteControlAtStartup": true,
+  "inputNeededNotifEnabled": false,
+  "agentPushNotifEnabled": false,
+  "autoMode": {
+    "environment": [
+      "### Org-wide",
+      "**Organization**: None configured \u2014 personal homelab/hobby setup (Stephen), no employer org evidenced in this repo",
+      "**Cloud provider(s)**: None configured",
+      "**Repository visibility**: Private (`stephenchappo/projects`, confirmed via gh)",
+      "**Internal sharing / snippet hosting**: None configured \u2014 treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: age-encrypted secrets in `_project-meta/secrets/` (`secrets.age`, `secrets.yaml.example` as template only); never commit plaintext; per-project `.env`/`.env.example` files (e.g. `agentic pipeline/.env`, `companion/.env`, `perch/.env.example`, etc.) \u2014 `.env` and `*.key` are gitignored",
+      "**Default / protected branches**: Default branch `main`; no protected branches listed and rulesets not queryable here \u2014 treat `main` as sensitive to force-push/history-rewrite regardless",
+      "**CI/CD deploy targets**: None configured",
+      "**Network posture**: None configured",
+      "**Host containment**: None configured \u2014 assume this runs on an ordinary developer machine (Anjie) with open internet",
+      "**Source control**: Trusted repo and its remote only \u2014 `github.com/stephenchappo/projects` (private)",
+      "**Trusted internal domains**: None configured",
+      "**Trusted cloud buckets**: None configured",
+      "**Key internal services**: None configured",
+      "**Internal package registry**: None configured",
+      "**Sensitive data locations & audiences**: `_project-meta/secrets/` (age-encrypted secrets, never plaintext); `obsidian-personal/` (gocryptfs plaintext mount, personal Tier-1 data, never in git, never on Trillian, never indexed into Companion); `conflict/` output (Tier-1 personal data, lives only in `obsidian-personal/60-Personal Information/Conflict/`, never in this repo, never on Trillian); `perch/` data (Tier-1 personal housing/benefits data, not on Trillian, never indexed into Companion, per ADR-0002); `Apple-SRE-Brain/` (work content, gitignored, local only, never push) \u2014 share only with the user (Stephen)",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: any namespace, host, or container whose name carries `prod` or `production` as a whole word or name segment",
+      "**Protected deployment namespaces / environments**: None configured \u2014 fall back to the Sensitive remote targets heuristic",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production` as a whole word or name segment",
+      "### User-specific",
+      "**Primary use of Claude Code**: personal homelab/software development \u2014 infra (Docker/Trillian/Deepthought/Anjie), plan/wiki management in an Obsidian vault, and multiple side-project repos under this monorepo",
+      "**Trusted repo**: `~/work` on this machine, remote `github.com/stephenchappo/projects` (private) \u2014 confidential material (e.g. age-encrypted secrets, non-Tier-1 personal notes) is fine to commit here, but Tier-1 personal data (conflict logs, perch data, personal vault) must never enter this repo regardless of its visibility",
+      "**Org-specific CLIs**: None configured",
+      "routine under `_project-meta/`, `agent-board/`, and per-project `docs/` prefixes is standard maintenance work in this repo, per CLAUDE.md conventions"
+    ],
+    "allow": [
+      "$defaults",
+      "Bash(git add:*) \u2014 scoped to `~/work` (github.com/stephenchappo/projects)",
+      "Bash(git commit:*) \u2014 scoped to `~/work`",
+      "Bash(git push:*) \u2014 scoped to `~/work`, `origin` only"
+    ],
+    "soft_deny": [
+      "$defaults",
+      "Writes or deletes under `~/work/obsidian-personal/` or any `obsidian-personal-enc` plaintext path",
+      "File writes or moves into `conflict/` output paths outside `obsidian-personal/60-Personal Information/Conflict/`",
+      "Commits or pushes touching `perch/` that include real listing/benefits data (Tier-1 personal data) rather than code"
+    ]
+  },
+  "deniedMcpServers": [
+    {
+      "serverUrl": "https://mcp.slack.com/*"
+    },
+    {
+      "serverUrl": "https://mcp.figma.com/*"
+    },
+    {
+      "serverUrl": "https://mcp.linear.app/*"
+    },
+    {
+      "serverUrl": "https://mcp.asana.com/*"
+    },
+    {
+      "serverUrl": "https://mcp.atlassian.com/*"
+    },
+    {
+      "serverUrl": "https://mcp.notion.com/*"
+    },
+    {
+      "serverUrl": "https://mcp.intercom.com/*"
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+# Copy to ~/.config/art-studio/promptbook.env and fill in the real token:
+#   ART_PROMPTBOOK_TOKEN=<token>
+# chmod 600 the result. Referenced by promptbook.conf via EnvironmentFile.

@@ -1,0 +1,64 @@
+# This repository lives in HOME and deliberately tracks only CLAUDE.md.
+#
+# HOME holds highly sensitive data — ~/.ssh private keys, ~/.claude credentials,
+# the ~/.config/gocryptfs vault passfile, and the plaintext personal-vault mount
+# at ~/work/obsidian-personal. None of that may ever enter git.
+#
+# The `*` default is therefore a safety measure: everything is ignored unless it
+# is explicitly un-ignored below, so sensitive files cannot be staged by accident
+# (not even by `git add -A`). Add new exceptions only with great care.
+
+*
+!.gitignore
+!CLAUDE.md
+
+# --- ~/.claude config (added 2026-08-19) -------------------------------------
+# Only hand-authored configuration. Everything else under .claude/ stays ignored
+# by the `*` above: session transcripts (jobs/ 763M, projects/ 638M), the memory
+# store (contains personal notes), .credentials.json, history.jsonl, error-context/,
+# shell-snapshots/, file-history/, backups/, uploads/, paste-cache/.
+#
+# settings.json is tracked and MUST stay secret-free. Machine-local secrets belong
+# in .claude/settings.local.json, which is deliberately NOT un-ignored below.
+!.claude/
+.claude/*
+!.claude/CLAUDE.md
+!.claude/settings.json
+!.claude/mcp.json
+!.claude/skills/
+!.claude/skills/**
+# claude.ai-synced skills: a cache Claude Code rewrites, and their license forbids keeping copies
+.claude/skills/synced/
+!.claude/hooks/
+!.claude/hooks/**
+
+# --- systemd user units (added 2026-09-14) ----------------------------------
+# Hand-authored unit files. These define how services start and were previously
+# edited with no diff or revert path. Drop-ins under *.service.d/ are included;
+# any secret a unit needs goes in a mode-600 EnvironmentFile that stays ignored.
+!.config/
+.config/*
+!.config/systemd/
+.config/systemd/*
+!.config/systemd/user/
+!.config/systemd/user/**
+# Never track the runtime symlink farms systemd manages itself.
+.config/systemd/user/*.wants/
+.config/systemd/user/*.requires/
+# Secrets referenced by units, never their values.
+.config/art-studio/
+*.env
+!*.env.example
+
+# --- crontab snapshot (added 2026-09-14) ------------------------------------
+# cron has no file to track, so the crontab is exported here. It is a SNAPSHOT,
+# not the live source: after `crontab -e`, re-run `crontab -l > .config/cron/crontab.txt`.
+!.config/cron/
+!.config/cron/**
+
+# --- system-level config (added 2026-09-14) ---------------------------------
+# Root-owned units, udev rules and scripts that live outside HOME and so had no
+# diff or revert path. Tracked here as the source of truth; each directory ships
+# an install.sh that copies them into place with root ownership.
+!system/
+!system/**

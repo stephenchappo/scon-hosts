@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash",
+      "WebFetch",
+      "Read(//home/scon/**)",
+      "Read(//srv/blank-slate/config/**)",
+      "Read(//srv/blank-slate/settings.json)",
+      "Edit(//home/scon/**)",
+      "Edit(//srv/blank-slate/config/**)",
+      "Edit(//srv/blank-slate/settings.json)"
+    ],
+    "additionalDirectories": []
+  },
+  "includeCoAuthoredBy": false,
+  "enableAllProjectMcpServers": false
+}

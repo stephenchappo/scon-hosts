@@ -1,0 +1,14 @@
+[Unit]
+Description=Companion vault calendar sync (one-shot)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/work/companion
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=-%h/work/companion/.env
+EnvironmentFile=-%h/work/companion/.vikunja.env
+ExecStart=%h/work/companion/scripts/run-vaults-sync.sh
+StandardOutput=journal
+StandardError=journal

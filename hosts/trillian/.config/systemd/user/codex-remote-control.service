@@ -1,0 +1,16 @@
+[Unit]
+Description=Codex remote control bridge
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/scon
+Environment=PATH=/home/scon/.local/share/npm/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/home/scon/.local/share/npm/bin/codex remote-control -c approval_policy="never"
+Restart=always
+RestartSec=5
+StandardOutput=append:/home/scon/.codex/remote-control.log
+StandardError=append:/home/scon/.codex/remote-control.log
+
+[Install]
+WantedBy=default.target

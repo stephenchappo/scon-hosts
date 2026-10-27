@@ -1,0 +1,11 @@
+[Unit]
+Description=RS-10 card gallery (tailnet only, :8799; HTTPS via tailscale serve :10443)
+After=network-online.target
+
+[Service]
+ExecStart=/usr/bin/python3 -m http.server 8799 --bind 100.96.176.20 --directory /home/scon/rs10-test
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

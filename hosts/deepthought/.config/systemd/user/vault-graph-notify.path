@@ -1,0 +1,9 @@
+[Unit]
+Description=Watch the Vault Graph data folder for a new export
+
+[Path]
+PathChanged=/home/scon/lightrag-kink/viewer
+Unit=vault-graph-notify.service
+
+[Install]
+WantedBy=default.target

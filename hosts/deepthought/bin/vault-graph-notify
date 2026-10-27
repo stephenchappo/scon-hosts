@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+"""Phone ping (ntfy) when a new Vault Graph export lands in ~/lightrag-kink/viewer.
+
+Run by vault-graph-notify.path. Remembers each graph file's mtime, so copying the
+web app or touching anything else in the folder never sends a message.
+"""
+import json, os, sys, urllib.request
+from collections import Counter
+from pathlib import Path
+
+DATA = Path.home() / "lightrag-kink/viewer"
+STATE = Path.home() / ".local/state/vault-graph-notify.json"
+NTFY = os.environ.get("VAULT_GRAPH_NTFY", "http://127.0.0.1:8491/homelab")
+APP = "https://deepthought.tail65866c.ts.net/app/"
+
+first_run = not STATE.exists()
+seen = {} if first_run else json.loads(STATE.read_text())
+for f in sorted(DATA.glob("graph-*.json")):
+    m = f.stat().st_mtime
+    if seen.get(f.name) == m:
+        continue
+    seen[f.name] = m
+    if first_run:
+        continue
+    ws = f.stem.removeprefix("graph-")
+    try:
+        g = json.loads(f.read_text())
+        kinds = Counter(n.get("k") for n in g["nodes"])
+        body = (f"{len(g['nodes']):,} nodes ({kinds.get('note', 0):,} notes, "
+                f"{kinds.get('entity', 0):,} entities), {len(g['edges']):,} links. "
+                "Reload the app to see it.")
+    except Exception as e:  # unexpected shape: still say it landed
+        body = f"New export written ({e.__class__.__name__} reading counts)."
+    req = urllib.request.Request(NTFY, data=body.encode(), headers={
+        "Title": f"Vault Graph updated: {ws}", "Tags": "milky_way",
+        "Priority": "default", "Click": APP})
+    try:
+        urllib.request.urlopen(req, timeout=10)
+        print(f"notified {ws}: {body}")
+    except Exception as e:
+        print(f"ntfy send failed: {e}", file=sys.stderr)
+STATE.parent.mkdir(parents=True, exist_ok=True)
+STATE.write_text(json.dumps(seen))

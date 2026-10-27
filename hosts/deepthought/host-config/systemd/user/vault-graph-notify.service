@@ -1,0 +1,6 @@
+[Unit]
+Description=Phone ping (ntfy) when a new Vault Graph export lands
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /home/scon/bin/vault-graph-notify

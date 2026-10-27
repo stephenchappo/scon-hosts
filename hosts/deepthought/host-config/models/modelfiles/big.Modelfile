@@ -1,0 +1,19 @@
+# big:latest — the large local model for GPU-exclusive mode on Deepthought.
+#
+# Only usable with `gpu-exclusive on` (see ~/bin/gpu-exclusive): it needs
+# essentially the whole 8 GB card, so gpud / ComfyUI / the roleplay stack must be
+# stopped first. In normal mode it will either OOM or crawl.
+#
+# num_gpu 48 — measured ceiling, not a guess. On the 8188 MiB 4070 at num_ctx
+# 16384: auto-split 6.48 tok/s, 44 -> 8.55, 46 -> 9.13, 48 -> 10.36, 50 -> 10.67,
+# 52 -> OOM. 50 is ~3% faster than 48 but leaves only 127 MiB free versus 343 MiB,
+# which is too little headroom for anything else that touches the card, so 48 is
+# the baked-in default.
+#
+# num_ctx 16384 — this arch's hybrid attention keeps the cache genuinely small
+# (832 MiB of KV at 16k, plus a constant-size recurrent state buffer), but at 48
+# offloaded layers there is no VRAM left to spend on more. Raising the context
+# means giving layers back: num_gpu 46 frees ~160 MiB more and costs ~12% speed.
+FROM hf.co/unsloth/Qwen3.8-27B-GGUF:UD-IQ2_S
+PARAMETER num_gpu 48
+PARAMETER num_ctx 16384
