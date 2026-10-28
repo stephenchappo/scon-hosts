@@ -15,5 +15,5 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY app/ app/
 USER gw
-EXPOSE 8640
-CMD ["uvicorn", "app.gateway:create_app", "--factory", "--host", "0.0.0.0", "--port", "8640", "--no-server-header"]
+# Both listeners bind loopback; compose runs this with the host network so loopback is Trillian's.
+CMD ["python3", "-m", "app.serve"]

@@ -36,6 +36,19 @@ printf 'EXTRA_KEY=x\nsome prose that is not a secret line\n' > "$T/old3.md"
 r3=$("$ROOT/bin/secrets-readback" gateway "$T/old3.md")
 ok "readback fails on a missing name and lists unparsed lines" '! "$ROOT/bin/secrets-readback" gateway "$T/old3.md" >/dev/null && grep -q MISSING <<<"$r3" && grep -q SKIPPED <<<"$r3"'
 
+printf 'OPENROUTER_API=or-value\nOPENROUTER_API=old-value\n' > "$T/dup.md"
+ok "readback fails on a duplicated name" '! "$ROOT/bin/secrets-readback" gateway "$T/dup.md" >/dev/null'
+printf "OPENROUTER_API='or-value\n" > "$T/q.md"
+ok "readback keeps an unmatched quote" '! "$ROOT/bin/secrets-readback" gateway "$T/q.md" >/dev/null'
+printf '| Name | Value |\n|---|---|\n| `N8N_KEY` | n8n-value |\n| namespace_token | x |\n' > "$T/tbl.md"
+r4=$("$ROOT/bin/secrets-readback" gateway "$T/tbl.md")
+ok "readback checks a row whose name starts with name" 'grep -q "MISSING.*namespace_token" <<<"$r4"'
+tr=$(env SHELLOPTS=xtrace bash -x "$ROOT/bin/bws-run" gateway -- true 2>&1)
+ok "bws-run never traces the token" '! grep -q machine-token <<<"$tr"'
+chmod 644 "$T/tok/gateway.token"
+ok "readback refuses a loose token file" '! "$ROOT/bin/secrets-readback" gateway "$T/old.md" >/dev/null 2>&1'
+chmod 600 "$T/tok/gateway.token"
+
 age-keygen -o "$T/key.txt" 2>/dev/null; age-keygen -y "$T/key.txt" > "$T/meta/recipients.txt"
 SECRETS_META_DIR="$T/meta" "$ROOT/bin/secrets-backup" gateway >/dev/null
 f=$(ls "$T"/meta/bws-gateway-*.json.age 2>/dev/null | head -1)
