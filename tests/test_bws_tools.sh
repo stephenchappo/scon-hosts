@@ -9,7 +9,10 @@ cat > "$T/bin/bws" <<'FAKE'
 #!/usr/bin/env bash
 [ "${BWS_ACCESS_TOKEN:-}" = "machine-token" ] || { echo "bad token" >&2; exit 9; }
 if [ "$1" = run ]; then shift 3; [ "$1" = "--" ] && shift; export OPENROUTER_API=or-value N8N_KEY=n8n-value; exec "$@"; fi
-if [ "$1 $2" = "secret list" ]; then echo '[{"key":"OPENROUTER_API","value":"or-value"},{"key":"N8N_KEY","value":"n8n-value"}]'; fi
+if [ "$1 $2" = "secret list" ]; then
+  dup=; [ -n "${FAKE_DUP:-}" ] && dup=',{"key":"N8N_KEY","value":"other"}'
+  echo '[{"key":"OPENROUTER_API","value":"or-value"},{"key":"N8N_KEY","value":"n8n-value"}'"$dup"']'
+fi
 FAKE
 chmod +x "$T/bin/bws"
 printf 'gateway  1111-2222\nempty TBD\n' > "$T/projects.conf"
@@ -38,6 +41,11 @@ ok "readback fails on a missing name and lists unparsed lines" '! "$ROOT/bin/sec
 
 printf 'OPENROUTER_API=or-value\nOPENROUTER_API=old-value\n' > "$T/dup.md"
 ok "readback fails on a duplicated name" '! "$ROOT/bin/secrets-readback" gateway "$T/dup.md" >/dev/null'
+ok "readback fails on a name duplicated in Secrets Manager" '! FAKE_DUP=1 "$ROOT/bin/secrets-readback" gateway "$T/old.md" >/dev/null'
+printf '| Name | Value | Notes |\n|---|---|---|\n| `N8N_KEY` | n8n-value | n8n |\nOPENROUTER_API=or-value\n' > "$T/hdr.md"
+ok "readback skips a real header row only" '"$ROOT/bin/secrets-readback" gateway "$T/hdr.md" >/dev/null'
+printf '| key | sk-live-123 | notes |\n' > "$T/hdr2.md"
+ok "a row that looks like a header but holds a value is not skipped silently" '! "$ROOT/bin/secrets-readback" gateway "$T/hdr2.md" >/dev/null'
 printf "OPENROUTER_API='or-value\n" > "$T/q.md"
 ok "readback keeps an unmatched quote" '! "$ROOT/bin/secrets-readback" gateway "$T/q.md" >/dev/null'
 printf '| Name | Value |\n|---|---|\n| `N8N_KEY` | n8n-value |\n| namespace_token | x |\n' > "$T/tbl.md"
@@ -53,6 +61,7 @@ age-keygen -o "$T/key.txt" 2>/dev/null; age-keygen -y "$T/key.txt" > "$T/meta/re
 SECRETS_META_DIR="$T/meta" "$ROOT/bin/secrets-backup" gateway >/dev/null
 f=$(ls "$T"/meta/bws-gateway-*.json.age 2>/dev/null | head -1)
 ok "backup is age-encrypted and decrypts to the values" '[ -n "$f" ] && ! grep -q or-value "$f" && age -d -i "$T/key.txt" "$f" | grep -q "\"OPENROUTER_API\": \"or-value\""'
+ok "backup refuses a project with a duplicated name" '! FAKE_DUP=1 SECRETS_META_DIR="$T/meta" "$ROOT/bin/secrets-backup" gateway 2>/dev/null && ! ls "$T"/meta/*.tmp 2>/dev/null'
 ok "backup refuses a TBD project" '! SECRETS_META_DIR="$T/meta" "$ROOT/bin/secrets-backup" empty 2>/dev/null'
 
 echo "$pass passed, $fail failed"; [ $fail = 0 ]

@@ -7,11 +7,11 @@ The gateway container for greenfield build step 6. **Staged, not deployed.** Wha
 | `app/gateway.py` | The service (FastAPI): chat routes, tool endpoints, health (no admin endpoint; policy loads at start) |
 | `app/policy.py` | Loads and checks the tables; `python3 -m app.policy DIR` checks a candidate |
 | `app/serve.py` | Runs the machine (8640) and cloud (8641) listeners on loopback in one process |
-| `tests/` | 72 tests, no network (every upstream is mocked) |
+| `tests/` | 82 tests, no network (every upstream is mocked) |
 | `compose.yaml`, `Dockerfile` | Host network with loopback-only listeners, read-only, all capabilities dropped, runs as the deploying user |
 | `gen_override.py` | Writes `compose.override.yaml` naming each token verifier and tool credential (names only) |
-| `deploy.sh` | Check, preflight, switch from a per-commit worktree, health, roll back on any failure. Refuses to start until `~/.config/scon-gateway/LIVE` exists |
-| `health.sh` | autodeploy-style health check |
+| `deploy.sh` | Check, preflight, build an image tagged by the scon-hosts commit, record the release, start it, check health serves its digest, roll back code and tables on any failure. One at a time (flock). Refuses to start until `~/.config/scon-gateway/LIVE` exists |
+| `health.sh` | autodeploy-style health check; with arguments, also that the expected policy digest and release are running |
 
 ## Test
 

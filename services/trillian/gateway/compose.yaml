@@ -4,8 +4,9 @@
 name: scon-gateway
 services:
   gateway:
-    build: {context: ., target: service}
-    image: scon-gateway:local
+    # deploy.sh builds and tags the image by the scon-hosts commit, then starts it with --no-build,
+    # so a rollback runs the old code as well as the old tables.
+    image: ${GATEWAY_IMAGE:?set by deploy.sh}
     restart: unless-stopped
     # Host network so both listeners bind Trillian's own loopback (127.0.0.1:8640 machine,
     # 127.0.0.1:8641 cloud) and nothing else, not even other containers, reaches them.
@@ -23,6 +24,7 @@ services:
       GW_RESTRICTED_LOG: /restricted/log/calls.jsonl
       GW_CANARIES_FILE: /system/benchmark/canaries.json
       GW_OLLAMA_URL: http://100.78.161.123:11434
+      GW_RELEASE: ${GATEWAY_RELEASE:?set by deploy.sh}
       GW_MACHINE_PORT: "8640"
       GW_CLOUD_PORT: "8641"
       GW_NTFY_URL: ${GW_NTFY_URL:-}
