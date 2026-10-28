@@ -58,7 +58,7 @@ start() {  # start <release-file>: its own tables worktree, its own image, then 
   python3 "$HERE/gen_override.py" "$GATEWAY_SYSTEM_CHECKOUT/gateway" > "$HERE/compose.override.yaml.new" || return 1
   mv "$HERE/compose.override.yaml.new" "$HERE/compose.override.yaml" || return 1
   (cd "$HERE" && "$HERE/../../../bin/bws-run" gateway -- docker compose up -d --no-build --force-recreate) || return 1
-  sleep 5
+  sleep "${GATEWAY_DEPLOY_WAIT:-5}"
   "$HERE/health.sh" "$DIGEST" "$GATEWAY_RELEASE"
 }
 
