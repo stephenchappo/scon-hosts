@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# bws-run PROJECT -- COMMAND...
+# Run COMMAND with the secrets of one Bitwarden Secrets Manager project in its environment
+# (greenfield step 5). Nothing is written to disk; the machine-account token itself is
+# not passed on to COMMAND.
+#
+#   bws-run gateway -- docker compose up -d
+#   ExecStart=%h/work/scon-hosts/bin/bws-run host-trillian -- %h/work/foo/run.sh
+#
+# PROJECT is a name from bws/projects.conf (name -> project id, ids are not secret).
+# The machine-account token for it is ~/.config/bws/PROJECT.token, mode 600, owned by
+# the user. Each project has its own machine account, so a host can read only its own.
+# Secret keys must be valid env names (UPPER_SNAKE); bws refuses others.
+set -euo pipefail
+HERE=$(cd "$(dirname "$(readlink -f "$0")")" && pwd)
+CONF=${BWS_PROJECTS_CONF:-$HERE/../bws/projects.conf}
+TOKDIR=${BWS_TOKEN_DIR:-$HOME/.config/bws}
+
+[ $# -ge 3 ] && [ "$2" = "--" ] || { echo "usage: bws-run PROJECT -- COMMAND..." >&2; exit 64; }
+project=$1; shift 2
+id=$(awk -v p="$project" '$1==p {print $2}' "$CONF")
+[ -n "$id" ] || { echo "bws-run: no project '$project' in $CONF" >&2; exit 65; }
+tok="$TOKDIR/$project.token"
+[ -f "$tok" ] || { echo "bws-run: no token file $tok" >&2; exit 66; }
+perm=$(stat -c %a "$tok")
+[ "$perm" = 600 ] || [ "$perm" = 400 ] || { echo "bws-run: $tok is mode $perm; must be 600 or 400" >&2; exit 67; }
+[ "$(stat -c %u "$tok")" = "$(id -u)" ] || { echo "bws-run: $tok is not owned by $(id -un)" >&2; exit 67; }
+command -v bws >/dev/null || { echo "bws-run: bws CLI not installed" >&2; exit 69; }
+
+BWS_ACCESS_TOKEN=$(cat "$tok") exec bws run --project-id "$id" -- env -u BWS_ACCESS_TOKEN "$@"
