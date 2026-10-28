@@ -6,7 +6,7 @@ malformed input becomes a PolicyError, never a crash.
 
     python3 -m app.policy /path/to/scon-system/gateway     # exit 1 and list problems if bad
 """
-import datetime, fnmatch, hashlib, json, math, pathlib, posixpath, re, shutil, sys, urllib.parse
+import datetime, fnmatch, hashlib, json, math, os, pathlib, posixpath, re, shutil, sys, urllib.parse
 import yaml
 
 FILES = ["routing.yaml", "approved-models.yaml", "tools.yaml", "tokens.yaml", "policy.yaml", "approved-runs.yaml"]
@@ -21,6 +21,28 @@ INGRESS = {"machine", "cloud"}
 RESERVED_SECRETS = re.compile(r"^(OPENROUTER_API.*|GW_.*|BWS_.*)$")
 MAX_TOKEN_DAYS = 90
 ID = re.compile(r"^[a-z0-9][a-z0-9-]{0,39}$")
+
+
+class _UniqueLoader(yaml.SafeLoader):
+    pass
+
+
+def _no_dupes(loader, node, deep=False):
+    keys = [loader.construct_object(k, deep=deep) for k, _ in node.value]
+    dup = {k for k in keys if keys.count(k) > 1}
+    if dup:
+        raise yaml.constructor.ConstructorError(None, None, f"duplicate key(s) {sorted(map(str, dup))}", node.start_mark)
+    return yaml.SafeLoader.construct_mapping(loader, node, deep)
+
+
+_UniqueLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _no_dupes)
+
+
+def path_pattern_ok(p):
+    """Policy path patterns follow the same literal rules the gateway applies to requests."""
+    return (isinstance(p, str) and p.startswith("/") and "//" not in p
+            and not re.search(r"[%;\\?#\s\x00-\x1f\x7f]", p)
+            and all(seg not in {".", ".."} for seg in p.split("/")[1:]))
 
 
 class PolicyError(Exception):
@@ -74,6 +96,8 @@ class Policy:
                 return True
         if source_path:
             p = canon_path(source_path)
+            if "%" in p:  # still encoded after decoding: can't be classified, so it is Tier-1
+                return True
             for g in t1["source_globs"]:
                 g = g.lower()
                 if fnmatch.fnmatchcase(p, g) or fnmatch.fnmatchcase(p + "/", g) or fnmatch.fnmatchcase(p + "/x", g):
@@ -103,8 +127,13 @@ def _check(raw, today=None):
         if not isinstance(r, dict):
             bad.append("routing: every route must be a mapping")
             continue
-        rid = r.get("id", "?")
+        rid = r.get("id")
+        if not isinstance(rid, str) or not ID.match(rid):
+            bad.append(f"route {rid}: needs an id of lowercase letters, digits and dashes")
+            continue
         ids.append(rid)
+        if not isinstance(r.get("returns", []), list) or not all(isinstance(x, str) for x in r.get("returns", [])):
+            bad.append(f"route {rid}: returns must be a list of model names")
         tiers = r.get("tiers") or []
         if not isinstance(r.get("models"), list) or not r["models"] or not all(isinstance(m, str) for m in r["models"]):
             bad.append(f"route {rid}: models must be a non-empty list of names")
@@ -150,13 +179,17 @@ def _check(raw, today=None):
                 bad.append(f"tool {name}.{verb}: query_keys must be a list")
             if not str(v.get("base", "")).startswith("https://"):
                 bad.append(f"tool {name}.{verb}: base must be https")
-            if not isinstance(v.get("paths"), list) or not v["paths"]:
-                bad.append(f"tool {name}.{verb}: no paths")
+            if not isinstance(v.get("paths"), list) or not v["paths"] or not all(path_pattern_ok(x) for x in v["paths"]):
+                bad.append(f"tool {name}.{verb}: paths must be literal /paths (one * per segment allowed)")
+            if not all(isinstance(x, str) for x in v.get("query_keys", []) or []):
+                bad.append(f"tool {name}.{verb}: query_keys must be names")
 
     for e in raw["approved-models.yaml"]["approved"]:
         if not isinstance(e, dict):
             bad.append("approved: every entry must be a mapping")
             continue
+        if not isinstance(e.get("model"), str) or not e["model"]:
+            bad.append("approved: every entry names a model")
         if e.get("account") not in accounts:
             bad.append(f"approved {e.get('model')}: unknown account {e.get('account')}")
         if not e.get("card"):
@@ -190,6 +223,13 @@ def _check(raw, today=None):
             tiers = []
         if "tier1" in tiers and env not in MACHINE_ENVS:
             bad.append(f"token {tid}: tier1 is never allowed in a cloud environment")
+        if "tier1" in tiers and isinstance(t["routes"], list) and any(
+                rr.get("provider", "openrouter") != "ollama" for rr in routing["routes"]
+                if isinstance(rr, dict) and rr.get("id") in t["routes"]):
+            bad.append(f"token {tid}: a token allowed tier1 may hold local routes only, so it can't claim Open "
+                       "and reach a hosted route")
+        if t["ingress"] == "cloud" and not (isinstance(t.get("access_client_id"), str) and t["access_client_id"]):
+            bad.append(f"token {tid}: a cloud token must name its Cloudflare Access service token (access_client_id)")
         if env == "restricted" and any(x not in RESTRICTED for x in tiers):
             bad.append(f"token {tid}: a restricted-environment token carries restricted tiers only")
         if env != "restricted" and env in CLOUD_ENVS and RESTRICTED & set(tiers):
@@ -224,13 +264,18 @@ def _check(raw, today=None):
     if not isinstance(lim.get("alerts_percent"), list) or not all(_money(p) for p in lim["alerts_percent"]):
         bad.append("policy: alerts_percent must be a list of numbers")
     t1 = lim.get("tier1")
-    if not isinstance(t1, dict) or not all(isinstance(t1.get(k), list) for k in ("source_globs", "source_keywords", "open_sources")):
-        bad.append("policy: tier1 needs source_globs, source_keywords and open_sources lists")
-    if not isinstance(lim.get("logs"), dict) or "shared" not in lim["logs"]:
-        bad.append("policy: logs.shared missing")
+    if not isinstance(t1, dict) or not all(isinstance(t1.get(k), list) and all(isinstance(x, str) for x in t1[k])
+                                           for k in ("source_globs", "source_keywords", "open_sources")):
+        bad.append("policy: tier1 needs source_globs, source_keywords and open_sources lists of strings")
+    logs = lim.get("logs")
+    if not isinstance(logs, dict) or not isinstance(logs.get("shared"), str) or not isinstance(logs.get("restricted", ""), str):
+        bad.append("policy: logs.shared (and logs.restricted, if set) must be paths")
     if _money(lim.get("unapproved_run_spend_usd")) and _money(lim.get("run_gate_usd")) and \
             lim["unapproved_run_spend_usd"] > lim["run_gate_usd"]:
         bad.append("policy: unapproved_run_spend_usd above the run gate")
+    run_ids = [r.get("run") for r in raw["approved-runs.yaml"]["runs"] if isinstance(r, dict)]
+    if len(run_ids) != len(set(run_ids)):
+        bad.append("runs: duplicate run id")
     for r in raw["approved-runs.yaml"]["runs"]:
         if not isinstance(r, dict):
             bad.append("runs: every run must be a mapping")
@@ -250,10 +295,14 @@ def load(config_dir, today=None):
         if not p.is_file():
             bad.append(f"{f}: missing")
             continue
-        b = p.read_bytes()
+        try:
+            b = p.read_bytes()
+        except OSError as e:
+            bad.append(f"{f}: {e}")
+            continue
         h.update(f.encode() + b"\0" + b)
         try:
-            raw[f] = yaml.safe_load(b) or {}
+            raw[f] = yaml.load(b, Loader=_UniqueLoader) or {}
         except yaml.YAMLError as e:
             bad.append(f"{f}: {e}")
             continue
@@ -276,19 +325,39 @@ def load(config_dir, today=None):
         bad = [f"policy check crashed: {type(e).__name__}: {e}"]
     if bad:
         raise PolicyError(bad)
-    return Policy(raw, h.hexdigest()[:12])
+    try:
+        return Policy(raw, h.hexdigest()[:12])
+    except Exception as e:
+        raise PolicyError([f"policy construction failed: {type(e).__name__}: {e}"])
 
 
-def save_lkg(config_dir, state_dir):
-    lkg = pathlib.Path(state_dir) / "lkg"
-    tmp = pathlib.Path(state_dir) / "lkg.tmp"
-    shutil.rmtree(tmp, ignore_errors=True)
-    tmp.mkdir(parents=True)
-    for f in FILES:
-        shutil.copy2(pathlib.Path(config_dir) / f, tmp / f)
-    (tmp / "SAVED").write_text(datetime.datetime.now(datetime.timezone.utc).isoformat())
-    shutil.rmtree(lkg, ignore_errors=True)
-    tmp.rename(lkg)
+def save_lkg(config_dir, state_dir, digest):
+    """Copy the tables to an immutable lkg-<digest>/ and swap the `lkg` symlink to it atomically.
+    The previous version is kept, so a crash mid-save never leaves no last-known-good."""
+    state = pathlib.Path(state_dir)
+    state.mkdir(parents=True, exist_ok=True)
+    target = state / f"lkg-{digest}"
+    if not target.is_dir():
+        tmp = state / f"lkg-{digest}.tmp"
+        shutil.rmtree(tmp, ignore_errors=True)
+        tmp.mkdir()
+        for f in FILES:
+            shutil.copy2(pathlib.Path(config_dir) / f, tmp / f)
+        (tmp / "SAVED").write_text(datetime.datetime.now(datetime.timezone.utc).isoformat())
+        tmp.rename(target)
+    link, prev = state / "lkg", None
+    if link.is_symlink():
+        prev = os.readlink(link)
+    if prev != target.name:
+        tmp_link = state / "lkg.new"
+        if tmp_link.is_symlink() or tmp_link.exists():
+            tmp_link.unlink()
+        tmp_link.symlink_to(target.name)
+        os.replace(tmp_link, link)
+    keep = {target.name, prev}
+    for d in state.glob("lkg-*"):
+        if d.name not in keep and not d.name.endswith(".tmp"):
+            shutil.rmtree(d, ignore_errors=True)
 
 
 if __name__ == "__main__":
