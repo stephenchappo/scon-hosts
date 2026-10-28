@@ -22,6 +22,8 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt pytest==9.2.0
 GATEWAY_TABLES=$SYSTEM/gateway .venv/bin/python -m pytest -q tests
 ```
 
+Deploy logic: `bash ~/work/scon-hosts/tests/test_gateway_deploy.sh` (fake docker and bws, starts nothing; needs the code committed).
+
 Or in the container: `./deploy.sh --check` (tests origin/main of scon-system; starts nothing).
 
 ## Going live (not before the D9 review and Scon's card)
