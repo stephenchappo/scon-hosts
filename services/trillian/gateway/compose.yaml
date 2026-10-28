@@ -1,16 +1,18 @@
 # The Trillian gateway. STAGED: not deployed. It starts only after the D9 review and
-# Scon's cards; see README.md. Started through bws-run so the keys come from Secrets
-# Manager at start time and never sit in a file:
-#   bws-run gateway -- docker compose up -d --build
+# Scon's go-live card; see README.md. Started by deploy.sh through bws-run, so the keys
+# come from Secrets Manager at start time and never sit in a file.
 name: scon-gateway
 services:
   gateway:
     build: {context: ., target: service}
     image: scon-gateway:local
     restart: unless-stopped
-    # Loopback only. Machines on the tailnet reach it through `tailscale serve`;
-    # cloud sessions through the ingress in scon-system/gateway/INGRESS.md.
-    ports: ["127.0.0.1:8640:8640"]
+    # Host network so both listeners bind Trillian's own loopback (127.0.0.1:8640 machine,
+    # 127.0.0.1:8641 cloud) and nothing else, not even other containers, reaches them.
+    # Ollama on Deepthought is reached over the tailnet (WireGuard), not the LAN.
+    network_mode: host
+    # Run as the deploying user so the bind-mounted state is writable (deploy.sh sets these).
+    user: "${GATEWAY_UID:?set by deploy.sh}:${GATEWAY_GID:?set by deploy.sh}"
     read_only: true
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
@@ -20,19 +22,20 @@ services:
       GW_SHARED_LOG: /data/log/calls.jsonl
       GW_RESTRICTED_LOG: /restricted/log/calls.jsonl
       GW_CANARIES_FILE: /system/benchmark/canaries.json
-      GW_OLLAMA_URL: http://192.168.42.150:11434
+      GW_OLLAMA_URL: http://100.78.161.123:11434
+      GW_MACHINE_PORT: "8640"
+      GW_CLOUD_PORT: "8641"
       GW_NTFY_URL: ${GW_NTFY_URL:-}
-      # From Secrets Manager project "gateway" (bws-run). :? makes compose refuse to start without them.
+      # Cloudflare Access (INGRESS.md). Without both, the cloud listener refuses everything.
+      GW_CF_TEAM_DOMAIN: ${GW_CF_TEAM_DOMAIN:-}
+      GW_CF_AUD: ${GW_CF_AUD:-}
+      # From Secrets Manager project "gateway". :? makes compose refuse to start without them.
       OPENROUTER_API: ${OPENROUTER_API:?run through bws-run gateway}
-      GW_ADMIN_SHA256: ${GW_ADMIN_SHA256:?run through bws-run gateway}
-      # Token verifiers and tool credentials are passed by name; add one line per token or tool.
-      # GW_TOKEN_SHA256_PERSONAL_SONNET: ${GW_TOKEN_SHA256_PERSONAL_SONNET:?}
+      # Token verifiers and tool credentials: compose.override.yaml, written by gen_override.py.
     volumes:
-      # The tables come from a checkout of scon-system pinned by deploy.sh, read-only.
       - ${GATEWAY_SYSTEM_CHECKOUT:?set by deploy.sh}/gateway:/config:ro
       - ${GATEWAY_SYSTEM_CHECKOUT}/benchmark/canaries.json:/system/benchmark/canaries.json:ro
-      - ${HOME}/.local/state/scon-gateway:/data
-      # Restricted full-text log; this path is inside the Restricted repo's clone on Trillian.
+      - ${GATEWAY_DATA_DIR:?set by deploy.sh}:/data
       - ${GATEWAY_RESTRICTED_LOG_DIR:?set by deploy.sh}:/restricted/log
     tmpfs: [/tmp]
     healthcheck:

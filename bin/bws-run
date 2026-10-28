@@ -11,6 +11,9 @@
 # The machine-account token for it is ~/.config/bws/PROJECT.token, mode 600, owned by
 # the user. Each project has its own machine account, so a host can read only its own.
 # Secret keys must be valid env names (UPPER_SNAKE); bws refuses others.
+# While `bws run` is alive its own environment holds the token (readable by this user and
+# root, who can read the token file anyway). The command it starts never sees it.
+set +x  # xtrace (even inherited through SHELLOPTS) would print the line that holds the token
 set -euo pipefail
 HERE=$(cd "$(dirname "$(readlink -f "$0")")" && pwd)
 CONF=${BWS_PROJECTS_CONF:-$HERE/../bws/projects.conf}
