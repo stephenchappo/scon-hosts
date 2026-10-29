@@ -1,0 +1,81 @@
+#cloud-config
+# First boot of the cloud node. Rendered by OpenTofu's templatefile(): the
+# placeholders below are filled in from tofu/variables.tf. Runs once.
+#
+# What it does: user scon, firewall that only lets the tailnet in, automatic
+# security updates, Docker, Tailscale joined as tag:cloud with Tailscale SSH,
+# and OpenSSH switched off. What it doesn't do: move any job. Jobs come later,
+# from the jobs registry, so this file stays the same when jobs change.
+
+hostname: ${hostname}
+fqdn: ${hostname}.batfish-pride.ts.net
+timezone: America/Los_Angeles
+
+users:
+  - name: scon
+    gecos: Scon
+    shell: /bin/bash
+    groups: [sudo, docker]
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    lock_passwd: true
+
+package_update: true
+package_upgrade: true
+packages:
+  - ufw
+  - unattended-upgrades
+  - docker.io
+  - docker-compose-v2
+  - git
+  - jq
+  - curl
+  - restic
+  - mtr-tiny
+  - dnsutils
+  - tcpdump
+
+write_files:
+  - path: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+  - path: /etc/apt/apt.conf.d/52scon-reboot
+    content: |
+      // Security updates that need a reboot get one at 04:30 Pacific.
+      Unattended-Upgrade::Automatic-Reboot "true";
+      Unattended-Upgrade::Automatic-Reboot-Time "04:30";
+  - path: /etc/systemd/journald.conf.d/size.conf
+    content: |
+      [Journal]
+      SystemMaxUse=1G
+  - path: /etc/docker/daemon.json
+    content: |
+      {"log-driver": "journald"}
+
+runcmd:
+  # Firewall: deny everything inbound except the tailnet and Tailscale's UDP port.
+  # (DigitalOcean's cloud firewall does the same one layer out.) Docker publishes
+  # ports around ufw, so containers bind to 127.0.0.1 and go out via tailscale serve.
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow 41641/udp
+  - ufw allow in on tailscale0
+  - ufw --force enable
+
+  # Tailscale from its own apt repo, joined with a single-use key tagged tag:cloud.
+  # Only the home subnet route is refused (accept-routes=false): this node never
+  # reaches 192.168.42.0/24. Tagged nodes don't expire.
+  - curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg -o /usr/share/keyrings/tailscale-archive-keyring.gpg
+  - curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.tailscale-keyring.list -o /etc/apt/sources.list.d/tailscale.list
+  - apt-get update
+  - apt-get install -y tailscale
+  - systemctl enable --now tailscaled
+  - tailscale up --auth-key='${tailscale_auth_key}' --hostname='${hostname}' --ssh --accept-routes=false
+  - tailscale set --auto-update
+
+  # Admin is Tailscale SSH only. Break glass: DigitalOcean's web console.
+  - systemctl disable --now ssh.socket ssh.service
+
+  - loginctl enable-linger scon
+  - systemctl enable --now docker
+  - touch /var/lib/scon-cloud-init-done
