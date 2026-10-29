@@ -26,6 +26,10 @@ DigitalOcean `sfo3`, Basic `s-2vcpu-4gb` (2 vCPU, 4 GB, 80 GB) with weekly backu
 | `tofu/` | OpenTofu: the droplet, its weekly backup, the cloud firewall |
 | `cloud-init.yaml` | First boot: user `scon`, ufw, security updates with 04:30 reboots, Docker, Tailscale (`--ssh`, tag:cloud), OpenSSH off |
 | `up.sh` | `plan`, `apply` or `destroy`, with a fresh single-use Tailscale key each run |
+| `deploy.sh` | From Trillian or Anjie: copy this folder to `eddie:~/eddie` and run `install.sh` there |
+| `install.sh` | On eddie: ntfy up and served on 443, watchdog timer on. Idempotent |
+| `services/ntfy/` | ntfy v2.11.0, localhost:8491, published by `tailscale serve` |
+| `services/watchdog/` | Every 5 min: Homepage, Loki, Trillian and Deepthought online. Pushes "Down"/"Back" after two failures |
 
 ## First build
 
@@ -33,17 +37,18 @@ Order matters: the tag has to exist before a key can carry it.
 
 1. **Scon:** DigitalOcean account with 2FA, card, a $40 billing alert, and a Personal Access
    Token `scon-cloud` with custom scopes (droplet, ssh_key, firewall, tag, regions; read,
-   create, update, delete). Store it with `projects/_project-meta/scripts/secret-send digitalocean-scon-cloud trillian2` (only Trillian can decrypt it).
+   create, update, delete). Store it with `projects/_project-meta/scripts/secret-send digitalocean-scon-cloud` (all machine keys;
+   on 2026-10-29 `keys/trillian2.pub` turned out not to be Trillian's key, so don't name a host until that's fixed).
 2. **Merge and apply the tailnet policy** that adds `tag:cloud` (`projects` PR). Applying it
    needs Scon's direct word, as always.
-3. **On Trillian:** install OpenTofu, then
+3. **On Trillian:** OpenTofu is installed by snap (`/snap/bin/tofu`; add `/snap/bin` to PATH in non-login shells), then
    ```bash
    EDDIE=~/work/scon-hosts/hosts/eddie
    export DIGITALOCEAN_TOKEN="$(~/work/_project-meta/scripts/secret-get digitalocean-scon-cloud)"
    $EDDIE/up.sh plan
    $EDDIE/up.sh apply      # only after Scon says "apply"
    ```
-4. Wait about 3 minutes, then `tailscale ssh scon@eddie` and check:
+4. Wait about 3 minutes, then `tailscale ssh scon@eddie` (from Anjie, the phone or a home server) and check:
    `test -f /var/lib/scon-cloud-init-done`, `sudo ufw status`, `tailscale status`,
    `systemctl is-active ssh` (should be inactive).
 
@@ -62,7 +67,12 @@ back from the registry.
   live, an age file until then. Only what eddie's jobs need: ntfy, a GitHub deploy key, the
   Claude login.
 
-## What runs here (planned, in this order)
+## Built 2026-10-29
+
+Droplet 614001618, `sfo3`, public IPv4 137.184.38.228 (nothing listens on it but Tailscale),
+tailnet 100.106.201.48. Tofu state on Trillian in `~/.local/state/scon-cloud/`.
+
+## What runs here (in this order)
 
 1. ntfy, served on `https://eddie.batfish-pride.ts.net` by `tailscale serve`; `scon-push` and
    `call-reminders` repointed with `SCON_PUSH_NTFY` / `CALL_REMINDER_NTFY` (call reminders

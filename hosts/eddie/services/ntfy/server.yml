@@ -1,0 +1,9 @@
+# Tailnet-only, so no accounts: who can reach it is decided by the tailnet policy
+# (Stephen's devices and tag:server on 443). Same as Deepthought's server it replaces.
+base-url: "https://eddie.batfish-pride.ts.net"
+listen-http: ":80"
+behind-proxy: true
+cache-file: "/var/cache/ntfy/cache.db"
+cache-duration: "72h"
+# Holds scheduled messages (scon-push's quiet-hours At: header) for up to 12 hours.
+delay-limit: "12h"
