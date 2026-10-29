@@ -1,0 +1,7 @@
+[Unit]
+Description=eddie outside-in watchdog: is home still there?
+After=network-online.target tailscaled.service
+
+[Service]
+Type=oneshot
+ExecStart=%h/eddie/services/watchdog/watchdog.sh
