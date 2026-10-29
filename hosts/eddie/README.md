@@ -29,7 +29,7 @@ DigitalOcean `sfo3`, Basic `s-2vcpu-4gb` (2 vCPU, 4 GB, 80 GB) with weekly backu
 | `deploy.sh` | From Trillian or Anjie: copy this folder to `eddie:~/eddie` and run `install.sh` there |
 | `install.sh` | On eddie: ntfy up and served on 443, watchdog timer on. Idempotent |
 | `services/ntfy/` | ntfy v2.11.0, localhost:8491, published by `tailscale serve` |
-| `services/watchdog/` | Every 5 min: Homepage, Loki, Trillian and Deepthought online. Pushes "Down"/"Back" after two failures |
+| `services/watchdog/` | Every 5 min: Homepage, Trillian and Deepthought online (Loki once it listens on the tailnet). Pushes "Down"/"Back" after two failures |
 
 ## First build
 
