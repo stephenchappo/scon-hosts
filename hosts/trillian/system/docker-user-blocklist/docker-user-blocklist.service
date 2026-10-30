@@ -1,0 +1,12 @@
+[Unit]
+Description=Drop blocklisted addresses in Docker's DOCKER-USER chain
+After=docker.service
+PartOf=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/docker-user-blocklist /etc/docker-user-blocklist
+
+[Install]
+WantedBy=docker.service
