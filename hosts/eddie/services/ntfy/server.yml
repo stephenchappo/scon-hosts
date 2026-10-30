@@ -4,6 +4,10 @@ base-url: "https://eddie.batfish-pride.ts.net"
 listen-http: ":80"
 behind-proxy: true
 cache-file: "/var/cache/ntfy/cache.db"
-cache-duration: "72h"
-# Holds scheduled messages (scon-push's quiet-hours At: header) for up to 12 hours.
-delay-limit: "12h"
+# 120 h so call-reminder's Mark as Done taps survive a four-day house outage until
+# Trillian is back to read them.
+cache-duration: "120h"
+# Holds scheduled messages: scon-push's quiet-hours At: header (up to 12 hours) and
+# `call-reminder handoff`, which hands a house outage's call reminders to eddie
+# ahead of time (up to 5 days, the Nov 12-15 2026 outage).
+delay-limit: "120h"
