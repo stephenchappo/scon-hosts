@@ -175,7 +175,7 @@ Prowlarr has the seedbox qBittorrent as a download client (category `books-picks
 **Plex** was restored on 2026-10-19:
 - PMS 1.43.4.10903, image pinned by digest in `/srv/docker/trillian/plex/docker-compose.yml`, with `no-new-privileges` and `/dev/dri`.
 - Incident evidence: `~/incident-2026-10-17/`.
-- ufw and DOCKER-USER drop `217.60.194.116` and `45.194.92.222`. The DOCKER-USER rules don't survive a reboot.
+- ufw and DOCKER-USER drop `217.60.194.116` and `45.194.92.222`. The DOCKER-USER rules come back on every Docker start through `docker-user-blocklist.service` (source `~/system/docker-user-blocklist/`, 2026-10-30); add addresses to its `blocklist` and re-run `install.sh`.
 
 ## Homepage and the app registry (2026-10-26)
 
