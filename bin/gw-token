@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Make a new gateway token (build step 7). Run it yourself in a terminal; never through
+# scon-run, a script or a Claude session, because it prints the token once.
+#
+#   gw-token new <id>      e.g. gw-token new consolidation-cloud
+#
+# Prints:
+#   1. the token, gw.<id>.<43+ random chars>: goes where the caller reads GATEWAY_TOKEN
+#      (a claude.ai environment's variables, or a host service's Secrets Manager project)
+#   2. the verifier name and value: add both as a secret in Secrets Manager project "gateway"
+# The id must match an entry in scon-system/gateway/tokens.yaml before the gateway accepts it.
+# Nothing is written to disk or to the journal except one line that a token id was made.
+set -euo pipefail
+set +x
+[ "${1:-}" = new ] && [ -n "${2:-}" ] || { sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 64; }
+id=$2
+[[ $id =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || { echo "gw-token: id must be lowercase letters, digits and dashes" >&2; exit 64; }
+[ -t 1 ] || [ "${GW_TOKEN_ALLOW_PIPE:-}" = 1 ] || { echo "gw-token: refusing to print a token into a pipe or file; run it in a terminal" >&2; exit 65; }
+out=$(python3 - "$id" <<'PY'
+import hashlib, secrets, sys
+tid = sys.argv[1]
+tok = f"gw.{tid}.{secrets.token_urlsafe(32)}"
+print(tok)
+print("GW_TOKEN_SHA256_" + tid.upper().replace("-", "_"))
+print(hashlib.sha256(tok.encode()).hexdigest())
+PY
+)
+{ read -r tok; read -r name; read -r verifier; } <<<"$out"
+command -v logger >/dev/null && logger -t gw-token "made a gateway token id=$id (value not logged)" || true
+cat <<MSG
+New gateway token for "$id". It is shown once and kept nowhere.
+
+1. The token (put it in the caller's GATEWAY_TOKEN variable):
+
+   $tok
+
+2. Add this secret to Secrets Manager project "gateway" (Bitwarden web app):
+
+   Name:  $name
+   Value: $verifier
+
+Then clear the screen (clear) and close the terminal's scrollback if it keeps one.
+MSG
