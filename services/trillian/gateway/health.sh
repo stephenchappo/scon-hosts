@@ -17,4 +17,9 @@ fi
 # Deny by default: no token must mean no service.
 code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -X POST "$URL/v1/chat/completions" -d '{}')
 [ "$code" = 401 ] && echo "ok   unauthenticated call refused" || { echo "FAIL unauthenticated call got $code"; fail=1; }
+# The tunnel connector (cloud path). A warning, not a failure: the machine path works without it.
+if [ -n "${GATEWAY_TUNNEL_METRICS:-http://127.0.0.1:8642}" ]; then
+  curl -fsS --max-time 5 "${GATEWAY_TUNNEL_METRICS:-http://127.0.0.1:8642}/ready" >/dev/null 2>&1 \
+    && echo "ok   tunnel connector ready" || echo "WARN tunnel connector not ready (cloud sessions can't reach the gateway)"
+fi
 exit $fail

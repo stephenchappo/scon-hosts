@@ -332,6 +332,20 @@ def test_open_call_logs_exact_cost_and_no_text(setup):
     assert not (tmp / "rlog/calls.jsonl").exists()
 
 
+def test_every_call_and_refusal_reaches_stdout_without_text(setup, capsys):
+    c, _, _, _, _ = setup
+    capsys.readouterr()
+    assert chat(c, headers={"X-Title": "pre-trip check", "X-Run-Id": "run-name-1"},
+                content="secret plans").status_code == 200
+    assert chat(c, content="CANARY-RS-123456").status_code == 451
+    out = capsys.readouterr().out
+    lines = [l for l in out.splitlines() if l.startswith("scon-gateway ")]
+    assert any("kind=call" in l and "cost_kind=exact" in l and "token=personal-sonnet" in l for l in lines)
+    assert any("kind=refusal" in l and "status=refused-canary" in l for l in lines)
+    for secret in ("secret plans", "pre-trip check", "run-name-1", "CANARY"):
+        assert secret not in out
+
+
 def test_decline_falls_back_without_rewording_and_charges_both(setup):
     c, up, _, tmp, _ = setup
     up.script["anthropic/claude-sonnet-5.5"] = (200, "content_filter", 2.0)

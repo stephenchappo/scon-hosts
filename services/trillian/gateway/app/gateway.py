@@ -108,6 +108,18 @@ def cost_of(usage):
     return None
 
 
+# One summary line per cost-log entry on stdout, so Docker's log (and so Loki) sees every
+# call, refusal and alert ("everything logs", account instructions v2.3). Only these fields,
+# never a prompt, completion, title, path or run name, whatever the tier.
+JOURNAL_KEYS = ("kind", "token", "environment", "project", "route", "tier", "status", "model",
+                "cost_usd", "cost_kind", "percent", "total_usd", "cap_usd")
+
+
+def journal_line(entry):
+    parts = [f"{k}={entry[k]}" for k in JOURNAL_KEYS if entry.get(k) not in (None, "")]
+    print("scon-gateway " + " ".join(re.sub(r"\s+", "_", p) for p in parts), flush=True)
+
+
 class AccountingError(Exception):
     pass
 
@@ -301,7 +313,9 @@ class Gateway:
             self.write(self.shared_log, entry)
         except OSError as e:
             self.accounting_ok = False
+            journal_line({"kind": "log-error", "status": "cost-log-not-writable"})
             raise AccountingError(str(e))
+        journal_line(entry)
 
     async def note(self, entry):
         """A refusal or tool line: no cost. Never carries caller text beyond validated fields."""
