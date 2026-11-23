@@ -1,0 +1,24 @@
+# Grafana Alloy on eddie: ships the system journal (sshd, tailscaled, Docker, timers) to
+# Loki on Trillian over the tailnet. Config: base.alloy, a copy of
+# projects/homelab-logging/alloy/base.alloy. Runs as root in the container so it can read
+# the system journal without sudo. No Tier-1 data on eddie, so nothing to filter.
+services:
+  alloy:
+    image: grafana/alloy:v1.10.0   # keep in step with Trillian's monitoring-agents alloy
+    restart: unless-stopped
+    command: run --server.http.listen-addr=127.0.0.1:12345 --storage.path=/var/lib/alloy /etc/alloy
+    environment:
+      LOKI_URL: https://trillian2-1.batfish-pride.ts.net:10451/loki/api/v1/push
+      HOST_LABEL: eddie
+      JOURNAL_PATH: /var/log/journal
+      SCONRUN_GLOB: /nonexistent/*.txt   # no scon-run on eddie
+    volumes:
+      - ./base.alloy:/etc/alloy/base.alloy:ro
+      - /var/log/journal:/var/log/journal:ro
+      - /run/log/journal:/run/log/journal:ro
+      - /etc/machine-id:/etc/machine-id:ro
+      - alloy-data:/var/lib/alloy
+    mem_limit: 300m
+
+volumes:
+  alloy-data:
