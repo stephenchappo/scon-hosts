@@ -4,7 +4,7 @@
 # the system journal without sudo. No Tier-1 data on eddie, so nothing to filter.
 services:
   alloy:
-    image: grafana/alloy:v1.10.0   # keep in step with Trillian's monitoring-agents alloy
+    image: grafana/alloy:v1.21.2   # keep in step with Trillian's monitoring-agents alloy
     restart: unless-stopped
     command: run --server.http.listen-addr=127.0.0.1:12345 --storage.path=/var/lib/alloy /etc/alloy
     environment:
