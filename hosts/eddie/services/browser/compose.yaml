@@ -1,0 +1,48 @@
+# A headless browser Claude can drive (Scon chose this 2026-10-30): Playwright MCP's
+# Chromium on a network with no way out except the scon-fetch proxy, which applies the
+# site book to every HTTPS tunnel and logs it. See README.md next to this file.
+#
+# The MCP server is published on eddie's localhost only: http://127.0.0.1:8931/mcp.
+# deploy.sh puts scon-fetch and the site book in ~/eddie/vendor/; install.sh sets SCON_UID.
+services:
+  proxy:
+    image: python:3.12.7-slim-bookworm
+    hostname: eddie                      # log lines say machine "eddie"
+    restart: unless-stopped
+    user: "${SCON_UID:-1000}:${SCON_UID:-1000}"
+    command: ["python3", "/opt/scon-fetch/bin/scon-fetch", "proxy", "--listen", "0.0.0.0:8930",
+              "--project", "browser", "--forward", "0.0.0.0:8931=browser:8931"]
+    environment:
+      SCON_SOURCES: /opt/sources
+      SCON_FETCH_STATE: /state
+      TZ: America/Los_Angeles
+    volumes:
+      - ../../vendor/scon-fetch:/opt/scon-fetch:ro
+      - ../../vendor/sources:/opt/sources:ro
+      - ${HOME}/.local/state/scon-fetch:/state    # shared with scon-fetch on eddie itself
+      - /dev/log:/dev/log                         # log lines reach eddie's journal
+    ports:
+      - "127.0.0.1:8931:8931"
+    networks: [inside, outside]
+    mem_limit: 128m
+
+  browser:
+    image: mcr.microsoft.com/playwright/mcp:v0.0.83
+    init: true
+    restart: unless-stopped
+    entrypoint: ["node", "/app/cli.js"]
+    command: ["--headless", "--browser", "chromium", "--no-sandbox", "--isolated",
+              "--host", "0.0.0.0", "--port", "8931",
+              "--allowed-hosts", "localhost:8931,127.0.0.1:8931",
+              "--proxy-server", "http://proxy:8930",
+              "--output-dir", "/tmp/playwright-output", "--output-max-size", "200000000",
+              "--viewport-size", "1280x900"]
+    networks: [inside]                   # internal: no route out except the proxy
+    shm_size: 1g
+    mem_limit: 1536m
+    depends_on: [proxy]
+
+networks:
+  inside:
+    internal: true
+  outside: {}

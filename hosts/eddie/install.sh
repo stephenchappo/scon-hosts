@@ -21,3 +21,13 @@ install -m 644 "$HERE/services/watchdog/eddie-watchdog.service" "$HERE/services/
 systemctl --user daemon-reload
 systemctl --user enable --now eddie-watchdog.timer
 echo "watchdog: timer enabled"
+
+# Browser Claude can drive: Playwright MCP's headless Chromium behind the scon-fetch proxy.
+# MCP server on eddie's localhost only: http://127.0.0.1:8931/mcp (services/browser/README.md)
+mkdir -p ~/.local/state/scon-fetch
+cd "$HERE/services/browser"
+SCON_UID=$(id -u) docker compose up -d --pull missing
+sleep 5
+docker compose exec -T browser node -e "require('net').connect({host:'1.1.1.1',port:443,timeout:5000}).on('connect',()=>process.exit(1)).on('error',()=>process.exit(0)).on('timeout',()=>process.exit(0))" \
+  || { echo "browser: can reach the internet without the proxy" >&2; exit 1; }
+python3 "$HERE/services/browser/smoke.py"

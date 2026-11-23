@@ -26,9 +26,10 @@ DigitalOcean `sfo3`, Basic `s-2vcpu-4gb` (2 vCPU, 4 GB, 80 GB) with weekly backu
 | `tofu/` | OpenTofu: the droplet, its weekly backup, the cloud firewall |
 | `cloud-init.yaml` | First boot: user `scon`, ufw, security updates with 04:30 reboots, Docker, Tailscale (`--ssh`, tag:cloud), OpenSSH off |
 | `up.sh` | `plan`, `apply` or `destroy`, with a fresh single-use Tailscale key each run |
-| `deploy.sh` | From Trillian or Anjie: copy this folder to `eddie:~/eddie` and run `install.sh` there |
-| `install.sh` | On eddie: ntfy up and served on 443, watchdog timer on. Idempotent |
+| `deploy.sh` | From Trillian or Anjie: copy this folder to `eddie:~/eddie`, with `scon-fetch` and the site book in `vendor/`, and run `install.sh` there |
+| `install.sh` | On eddie: ntfy up and served on 443, watchdog timer on, browser up and smoke-tested. Idempotent |
 | `services/ntfy/` | ntfy v2.11.0, localhost:8491, published by `tailscale serve` |
+| `services/browser/` | Headless Chromium that Claude drives through the Playwright MCP server, on `127.0.0.1:8931`; its only way out is the `scon-fetch` proxy, which applies the site book (README there) |
 | `services/watchdog/` | Every 5 min: Homepage, Trillian and Deepthought online (Loki once it listens on the tailnet). Pushes "Down"/"Back" after two failures |
 
 ## First build
@@ -80,3 +81,4 @@ tailnet 100.106.201.48. Tofu state on Trillian in `~/.local/state/scon-cloud/`.
 2. Outside-in watchdog and dead-man's switch.
 3. Your Move runner (`projects/your-move/`, PR #160): one live runner at a time.
 4. `scon-digest`, `mailbox-notify`, Claude Remote Control, the jobs registry reconcile.
+5. The browser Claude can drive (`services/browser/`, Scon's pick 2026-10-30).
