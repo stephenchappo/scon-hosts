@@ -15,6 +15,12 @@ done
 curl -fsS -m 3 http://127.0.0.1:8491/v1/health | grep -q '"healthy":true' || { echo "ntfy not healthy" >&2; exit 1; }
 echo "ntfy: healthy, served on https://eddie.batfish-pride.ts.net"
 
+# Alloy: ship the journal to Loki on Trillian (tailnet :10451)
+cd "$HERE/services/alloy"
+docker compose up -d --pull missing
+logger -t eddie-install "alloy: started, shipping journal to Loki"
+echo "alloy: started"
+
 # Watchdog timer (user unit; linger is on from cloud-init)
 mkdir -p ~/.config/systemd/user
 install -m 644 "$HERE/services/watchdog/eddie-watchdog.service" "$HERE/services/watchdog/eddie-watchdog.timer" ~/.config/systemd/user/

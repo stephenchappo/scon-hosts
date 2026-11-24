@@ -1,0 +1,94 @@
+// COPY of projects/homelab-logging/alloy/base.alloy (source of truth). Re-copy after a change there.
+// Grafana Alloy: ships this host's logs to Loki on Trillian.
+// One file for every host; the differences come from the environment:
+//   LOKI_URL      push endpoint, e.g. http://127.0.0.1:3100/loki/api/v1/push
+//   HOST_LABEL    trillian | deepthought | anjie
+//   SCONRUN_GLOB  where scon-run keeps its log copies (*.txt)
+//   JOURNAL_PATH  journal dir to read ("" = the system default)
+//   DOCKER_HOST   docker socket (docker.alloy only)
+// Hosts with Docker also load docker.alloy (Alloy reads every *.alloy in its dir).
+// Source of truth: ~/work/homelab-logging/alloy/ (projects repo).
+
+logging {
+  level = "warn"
+}
+
+// Lines that look like errors get level="error", so "errors per host" is one query.
+// Journal lines already carry the journal priority as their level.
+loki.process "levels" {
+  stage.match {
+    selector = `{job=~".+", level!~"err|crit|alert|emerg|error"} |~ "(?i)(\\blevel[=:]\\s*\"?(error|fatal|crit)|\\[(error|fatal|crit|critical)\\]|\\b(error|fatal|panic|critical|traceback)\\b)"`
+    stage.static_labels {
+      values = { level = "error" }
+    }
+  }
+  stage.match {
+    selector = "{job=\"journal\", level=~\"err|crit|alert|emerg\"}"
+    stage.static_labels {
+      values = { level = "error" }
+    }
+  }
+  forward_to = [loki.write.trillian.receiver]
+}
+
+loki.write "trillian" {
+  endpoint {
+    url = sys.env("LOKI_URL")
+  }
+  external_labels = { host = sys.env("HOST_LABEL") }
+}
+
+// ── journald: system and user journals ──────────────────────────────────────
+// unit = the unit a line is about: UNIT/USER_UNIT for systemd's own messages
+// ("x.service: Failed with result ..."), else the unit that wrote it.
+loki.relabel "journal" {
+  forward_to = []
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    regex         = "(.+)"
+    target_label  = "unit"
+  }
+  rule {
+    source_labels = ["__journal__systemd_user_unit"]
+    regex         = "(.+)"
+    target_label  = "unit"
+  }
+  rule {
+    source_labels = ["__journal_unit"]
+    regex         = "(.+)"
+    target_label  = "unit"
+  }
+  rule {
+    source_labels = ["__journal_user_unit"]
+    regex         = "(.+)"
+    target_label  = "unit"
+  }
+  rule {
+    source_labels = ["__journal_priority_keyword"]
+    target_label  = "level"
+  }
+  rule {
+    source_labels = ["__journal__transport"]
+    regex         = "kernel"
+    replacement   = "kernel"
+    target_label  = "unit"
+  }
+}
+
+loki.source.journal "journal" {
+  path          = sys.env("JOURNAL_PATH")
+  max_age       = "12h"
+  relabel_rules = loki.relabel.journal.rules
+  labels        = { job = "journal" }
+  forward_to    = [loki.process.levels.receiver]
+}
+
+// ── scon-run logs ───────────────────────────────────────────────────────────
+local.file_match "sconrun" {
+  path_targets = [{ "__path__" = sys.env("SCONRUN_GLOB"), "job" = "scon-run" }]
+}
+
+loki.source.file "sconrun" {
+  targets    = local.file_match.sconrun.targets
+  forward_to = [loki.process.levels.receiver]
+}
