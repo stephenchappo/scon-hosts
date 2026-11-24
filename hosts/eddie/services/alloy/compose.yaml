@@ -6,7 +6,7 @@ services:
   alloy:
     image: grafana/alloy:v1.21.2   # keep in step with Trillian's monitoring-agents alloy
     restart: unless-stopped
-    command: run --server.http.listen-addr=127.0.0.1:12345 --storage.path=/var/lib/alloy /etc/alloy
+    command: run --server.http.listen-addr=127.0.0.1:12345 --storage.path=/var/lib/alloy /etc/alloy/base.alloy   # the file, not the dir: the image ships its own /etc/alloy/config.alloy
     environment:
       LOKI_URL: https://trillian2-1.batfish-pride.ts.net:10451/loki/api/v1/push
       HOST_LABEL: eddie
