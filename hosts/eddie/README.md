@@ -30,7 +30,7 @@ DigitalOcean `sfo3`, Basic `s-2vcpu-4gb` (2 vCPU, 4 GB, 80 GB) with weekly backu
 | `install.sh` | On eddie: ntfy up and served on 443, watchdog timer on. Idempotent |
 | `services/ntfy/` | ntfy v2.11.0, localhost:8491, published by `tailscale serve` |
 | `services/alloy/` | Grafana Alloy in Docker: the journal (Tailscale SSH sessions included) to Loki on Trillian, tailnet :10451. `base.alloy` is a copy from `projects/homelab-logging` |
-| `services/watchdog/` | Every 5 min: Homepage, Trillian and Deepthought online (Loki once it listens on the tailnet). Pushes "Down"/"Back" after two failures |
+| `services/watchdog/` | Every 5 min: Homepage, Loki `/ready` (via Trillian's tailnet-only `:10451`), Trillian and Deepthought online. Pushes "Down"/"Back" after two failures |
 
 ## First build
 
