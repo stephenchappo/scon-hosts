@@ -1,0 +1,15 @@
+#!/bin/sh
+# Put a DROP rule in DOCKER-USER for every address in the blocklist, both ways.
+# Idempotent: rules already there are left alone. Runs as root after docker.
+set -eu
+list=${1:-/etc/docker-user-blocklist}
+iptables -n -L DOCKER-USER >/dev/null 2>&1 || { echo "no DOCKER-USER chain yet"; exit 1; }
+grep -v '^[[:space:]]*\(#\|$\)' "$list" | while read -r ip _; do
+  for dir in -s -d; do
+    if ! iptables -C DOCKER-USER "$dir" "$ip" -j DROP 2>/dev/null; then
+      iptables -I DOCKER-USER "$dir" "$ip" -j DROP
+      logger -t docker-user-blocklist "added DROP $dir $ip"
+    fi
+  done
+done
+logger -t docker-user-blocklist "blocklist applied from $list"

@@ -1,0 +1,5 @@
+# One IPv4 address or CIDR per line. Traffic to or from these is dropped in
+# Docker's DOCKER-USER chain (container traffic) on every Docker start.
+# Both came from the 2026-10-17 Plex incident (~/incident-2026-10-17/REPORT.md).
+217.60.194.116
+45.194.92.222
