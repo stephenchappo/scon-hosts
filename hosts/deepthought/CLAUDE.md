@@ -284,6 +284,15 @@ and retries every 10 s, resuming on its own once you run `claude auth login`.
 Diagnose with `journalctl --user -u claude-remote-control -n 20`. Needs `~/work`
 trusted in `~/.claude.json` (`hasTrustDialogAccepted`). Installed 2026-10-03.
 
+### GPU power and thermal mode (2026-11-08)
+
+On 2026-11-07/08 the 4070 sat at a **30 W power limit, ~19 W draw, P4, ~350 MHz** under full load ("SW Power Cap" + "SW Thermal Slowdown"), so every model ran at 3-5 tok/s instead of ~40. Changes made while chasing it (Scon approved each):
+
+- `smbios-utils` 2.4.3-1build1 (apt) installed; Dell thermal mode set **Balanced -> Performance** with `sudo smbios-thermal-ctl --set-thermal-mode=performance` (held in firmware). CPU package dropped ~10-20 °C. Undo: `--set-thermal-mode=balanced`.
+- `nvidia-powerd` enabled: `/etc/systemd/system/nvidia-powerd.service` and `/etc/dbus-1/system.d/nvidia-dbus.conf`, copied unchanged from the driver 580 doc folders. Did **not** lift the cap. Undo: `sudo systemctl disable --now nvidia-powerd`, remove both files, `daemon-reload`.
+
+Neither lifted the cap. Suspects left: the charger (the G16 needs its 240 W barrel; Linux only reports "AC on-line") or firmware stuck in a low state (reboot, ask first). Check with `nvidia-smi -q -d POWER,PERFORMANCE` before trusting any tok/s figure.
+
 ## Critical Constraints
 
 - **Always ask before rebooting the machine.**
