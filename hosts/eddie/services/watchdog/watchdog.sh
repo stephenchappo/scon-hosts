@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # eddie's outside-in watchdog: is home still there? Runs every 5 minutes.
 #
-# Checks Homepage on Trillian (svc:home) and whether Trillian and
+# Checks Homepage on Trillian (svc:home), Loki's /ready, and whether Trillian and
 # Deepthought are online on the tailnet. Pushes once when a check has failed twice in a
 # row (about 10 minutes) and once when it recovers, as scon-push level "broken": high
 # priority, never held for quiet hours. Posts straight to eddie's own ntfy, so it works
@@ -46,6 +46,9 @@ check() {  # name, label, command...
 }
 
 check homepage "Homepage on Trillian" http_ok https://home.batfish-pride.ts.net
-# Loki: added back once it listens on the tailnet (today only 127.0.0.1 and the LAN).
+# Loki on Trillian: its own ports are 127.0.0.1 and the LAN only, so check the
+# tailnet-only `tailscale serve :10451` that eddie's Alloy already ships through
+# (the old 100.96.176.20:3100 check failed from 2026-10-29: nothing listens there).
+check loki "Loki on Trillian (tailnet :10451)" http_ok https://trillian2-1.batfish-pride.ts.net:10451/ready
 check trillian "Trillian (tailnet)" online trillian2-1
 check deepthought "Deepthought (tailnet)" online deepthought
